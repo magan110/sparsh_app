@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'dsr_retailer_in_out.dart';
+
 class DsrEntry extends StatefulWidget {
   const DsrEntry({Key? key}) : super(key: key);
 
@@ -171,6 +173,15 @@ class _DsrEntryState extends State<DsrEntry> {
                     onChanged: (newValue) {
                       if (newValue != null) {
                         setState(() => _activityItem = newValue);
+
+                        // 🔹 Navigate on Personal Visit
+                        if (newValue == 'Personal Visit') {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const DsrRetailerInOut(),
+                            ),
+                          );
+                        }
                       }
                     },
                     items: _activityDropDownItems
@@ -263,7 +274,8 @@ class _DsrEntryState extends State<DsrEntry> {
                 Column(
                   children: _uploadRows.map((i) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      padding:
+                      const EdgeInsets.symmetric(vertical: 8.0),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -276,7 +288,8 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.blue,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius:
+                                  BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24, vertical: 12),
@@ -292,7 +305,8 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.green,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius:
+                                  BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24, vertical: 12),
@@ -306,7 +320,8 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.yellow,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius:
+                                  BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 12),
@@ -320,7 +335,8 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.red,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius:
+                                  BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 12),
@@ -333,8 +349,6 @@ class _DsrEntryState extends State<DsrEntry> {
                     );
                   }).toList(),
                 ),
-
-
               ],
             ),
           ),
@@ -351,7 +365,8 @@ class _DsrEntryState extends State<DsrEntry> {
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
           child: Text(
             label,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+                fontSize: 18, fontWeight: FontWeight.w500),
           ),
         ),
         const SizedBox(height: 10),
