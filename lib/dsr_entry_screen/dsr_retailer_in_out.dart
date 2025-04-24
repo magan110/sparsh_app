@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 class DsrRetailerInOut extends StatefulWidget {
@@ -10,6 +11,7 @@ class DsrRetailerInOut extends StatefulWidget {
 }
 
 class _DsrRetailerInOutState extends State<DsrRetailerInOut> {
+  // Dropdown state
   String _puchaserRetailerItem = 'Select';
   final List<String> _puchaserRetailerdropdownItems = [
     'Select',
@@ -23,141 +25,121 @@ class _DsrRetailerInOutState extends State<DsrRetailerInOut> {
   String _areaCode = 'Select';
   final List<String> _majorCitiesInIndia = [
     'Select',
-    'Agra',
-    'Ahmedabad',
-    'Ajmer',
-    'Akola',
-    'Aligarh',
-    'Allahabad',
-    'Alwar',
-    'Ambala',
-    'Amravati',
-    'Amritsar',
-    'Anand',
-    'Anantapur',
-    'Aurangabad',
-    'Asansol',
-    'Bareilly',
-    'Bengaluru',
-    'Belgaum',
-    'Bhagalpur',
-    'Bhavnagar',
-    'Bhilai',
-    'Bhiwandi',
-    'Bhopal',
-    'Bhubaneswar',
-    'Bikaner',
-    'Bilaspur',
-    'Bokaro Steel City',
-    'Chandigarh',
-    'Chennai',
-    'Coimbatore',
-    'Cuttack',
-    'Dehradun',
-    'Delhi',
-    'Dhanbad',
-    'Durgapur',
-    'Erode',
-    'Faridabad',
-    'Firozabad',
-    'Gandhinagar',
-    'Ghaziabad',
-    'Gorakhpur',
-    'Guntur',
-    'Gurgaon',
-    'Guwahati',
-    'Gwalior',
-    'Haldwani',
-    'Haridwar',
-    'Hubli-Dharwad',
-    'Hyderabad',
-    'Imphal',
-    'Indore',
-    'Itanagar',
-    'Jabalpur',
-    'Jaipur',
-    'Jalandhar',
-    'Jammu',
-    'Jamshedpur',
-    'Jhansi',
-    'Jodhpur',
-    'Junagadh',
-    'Kakinada',
-    'Kalyan-Dombivli',
-    'Kanpur',
-    'Kochi',
-    'Kolhapur',
-    'Kolkata',
-    'Kollam',
-    'Kota',
-    'Kozhikode',
-    'Kurnool',
-    'Lucknow',
-    'Ludhiana',
-    'Madurai',
-    'Malappuram',
-    'Mangalore',
-    'Meerut',
-    'Mira-Bhayandar',
-    'Moradabad',
-    'Mumbai',
-    'Mysuru',
-    'Nagpur',
-    'Nanded',
-    'Nashik',
-    'Navi Mumbai',
-    'Nellore',
-    'Noida',
-    'Patna',
-    'Pimpri-Chinchwad',
-    'Prayagraj',
-    'Pune',
-    'Raipur',
-    'Rajkot',
-    'Rajahmundry',
-    'Ranchi',
-    'Rohtak',
-    'Rourkela',
-    'Saharanpur',
-    'Salem',
-    'Sangli-Miraj & Kupwad',
-    'Shillong',
-    'Shimla',
-    'Siliguri',
-    'Solapur',
-    'Srinagar',
-    'Surat',
-    'Thane',
-    'Thiruvananthapuram',
-    'Thrissur',
-    'Tiruchirappalli',
-    'Tirunelveli',
-    'Tiruppur',
-    'Udaipur',
-    'Ujjain',
-    'Ulhasnagar',
-    'Vadodara',
-    'Varanasi',
-    'Vasai-Virar',
-    'Vijayawada',
-    'Visakhapatnam',
-    'Warangal',
-    'Yamunanagar',
+    'Agra', 'Ahmedabad', 'Ajmer', 'Akola', 'Aligarh',
+    'Allahabad', 'Alwar', 'Ambala', 'Amravati', 'Amritsar',
+    'Anand', 'Anantapur', 'Aurangabad', 'Asansol', 'Bareilly',
+    'Bengaluru', 'Belgaum', 'Bhagalpur', 'Bhavnagar', 'Bhilai',
+    'Bhiwandi', 'Bhopal', 'Bhubaneswar', 'Bikaner', 'Bilaspur',
+    'Bokaro Steel City', 'Chandigarh', 'Chennai', 'Coimbatore', 'Cuttack',
+    'Dehradun', 'Delhi', 'Dhanbad', 'Durgapur', 'Erode',
+    'Faridabad', 'Firozabad', 'Gandhinagar', 'Ghaziabad', 'Gorakhpur',
+    'Guntur', 'Gurgaon', 'Guwahati', 'Gwalior', 'Haldwani',
+    'Haridwar', 'Hubli-Dharwad', 'Hyderabad', 'Imphal', 'Indore',
+    'Itanagar', 'Jabalpur', 'Jaipur', 'Jalandhar', 'Jammu',
+    'Jamshedpur', 'Jhansi', 'Jodhpur', 'Junagadh', 'Kakinada',
+    'Kalyan-Dombivli', 'Kanpur', 'Kochi', 'Kolhapur', 'Kolkata',
+    'Kollam', 'Kota', 'Kozhikode', 'Kurnool', 'Lucknow',
+    'Ludhiana', 'Madurai', 'Malappuram', 'Mangalore', 'Meerut',
+    'Mira-Bhayandar', 'Moradabad', 'Mumbai', 'Mysuru', 'Nagpur',
+    'Nanded', 'Nashik', 'Navi Mumbai', 'Nellore', 'Noida',
+    'Patna', 'Pimpri-Chinchwad', 'Prayagraj', 'Pune', 'Raipur',
+    'Rajkot', 'Rajahmundry', 'Ranchi', 'Rohtak', 'Rourkela',
+    'Saharanpur', 'Salem', 'Sangli-Miraj & Kupwad', 'Shillong', 'Shimla',
+    'Siliguri', 'Solapur', 'Srinagar', 'Surat', 'Thane',
+    'Thiruvananthapuram', 'Thrissur', 'Tiruchirappalli', 'Tirunelveli', 'Tiruppur',
+    'Udaipur', 'Ujjain', 'Ulhasnagar', 'Vadodara', 'Varanasi',
+    'Vasai-Virar', 'Vijayawada', 'Visakhapatnam', 'Warangal', 'Yamunanagar',
   ];
 
+  // City coordinates mapping
+  final Map<String, Map<String, double>> _cityCoordinates = {
+    'Agra': {'latitude': 27.1767, 'longitude': 78.0081},
+    'Ahmedabad': {'latitude': 23.0225, 'longitude': 72.5714},
+    'Ajmer': {'latitude': 26.4499, 'longitude': 74.6399},
+    'Akola': {'latitude': 20.7063, 'longitude': 77.0202},
+    'Aligarh': {'latitude': 27.8974, 'longitude': 78.0880},
+    // Add more cities here as required
+  };
+
+  // Date picker
   final TextEditingController _dateController = TextEditingController();
   DateTime? _selectedDate;
+
+  // Location controllers
+  final TextEditingController _yourLatitudeController = TextEditingController();
+  final TextEditingController _yourLongitudeController = TextEditingController();
+  final TextEditingController _custLatitudeController = TextEditingController();
+  final TextEditingController _custLongitudeController = TextEditingController();
 
   // Form key
   final _formKey = GlobalKey<FormState>();
 
-  // Manages dynamic upload rows
-  List<int> _uploadRows = [0];
-
   @override
   void dispose() {
     _dateController.dispose();
+    _yourLatitudeController.dispose();
+    _yourLongitudeController.dispose();
+    _custLatitudeController.dispose();
+    _custLongitudeController.dispose();
     super.dispose();
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw ('Location services are disabled.');
+    }
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw ('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      throw ('Location permissions are permanently denied, we cannot request permissions.');
+    }
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  }
+
+  Future<void> _captureYourLocation() async {
+    try {
+      final pos = await _determinePosition();
+      setState(() {
+        _yourLatitudeController.text = pos.latitude.toString();
+        _yourLongitudeController.text = pos.longitude.toString();
+      });
+    } catch (e) {
+      _showError(e.toString());
+    }
+  }
+
+  Future<void> _captureCustomerLocation() async {
+    try {
+      final pos = await _determinePosition();
+      setState(() {
+        _custLatitudeController.text = pos.latitude.toString();
+        _custLongitudeController.text = pos.longitude.toString();
+      });
+    } catch (e) {
+      _showError(e.toString());
+    }
+  }
+
+  void _showError(String msg) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(msg),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          )
+        ],
+      ),
+    );
   }
 
   Future<void> _pickDate() async {
@@ -181,26 +163,18 @@ class _DsrRetailerInOutState extends State<DsrRetailerInOut> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: const Text(
-            'DSR Retailer IN OUT',
-            style: TextStyle(color: Colors.white, fontSize: 30),
-          ),
+        leading: BackButton(color: Colors.white),
+        title: const Text(
+          'DSR Retailer IN OUT',
+          style: TextStyle(color: Colors.white, fontSize: 30),
         ),
         backgroundColor: Colors.blue,
       ),
       body: ListView(
         padding: const EdgeInsets.all(8),
         children: [
-          _buildLabel(context, 'Purchaser / Retailer'),
-          const SizedBox(height: 20),
+          _buildLabel('Purchaser / Retailer'),
+          const SizedBox(height: 8),
           _dropDownField(
             selected: _puchaserRetailerItem,
             items: _puchaserRetailerdropdownItems,
@@ -208,346 +182,200 @@ class _DsrRetailerInOutState extends State<DsrRetailerInOut> {
               if (val != null) setState(() => _puchaserRetailerItem = val);
             },
           ),
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Area code *:'),
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 16),
+          _buildLabel('Area code *:'),
+          const SizedBox(height: 8),
           _searchableDropdownField(
             selected: _areaCode,
             items: _majorCitiesInIndia,
             onChanged: (val) {
-              if (val != null) setState(() => _areaCode = val);
+              if (val != null) {
+                setState(() {
+                  _areaCode = val;
+                  // Set latitude and longitude based on the selected area code
+                  if (_cityCoordinates.containsKey(val)) {
+                    _custLatitudeController.text = _cityCoordinates[val]!['latitude']!.toString();
+                    _custLongitudeController.text = _cityCoordinates[val]!['longitude']!.toString();
+                  }
+                });
+              }
             },
           ),
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Code *:'),
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 16),
+          _buildLabel('Code *:'),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                    hintText: 'Purchaser code',
-                    border: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.black),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                  decoration: _inputDecoration('Purchaser code'),
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.search, color: Colors.white),
-                  onPressed: () {
-                    // TODO: perform search
-                  },
-                ),
-              ),
-
+              _iconButton(Icons.search, () {
+                // TODO: perform code search
+              }),
             ],
           ),
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Customer Name*:'),
-          const SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              hintText: '',
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
 
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Report Date*'),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          _buildLabel('Customer Name*:'),
+          const SizedBox(height: 8),
+          TextField(decoration: _inputDecoration('')),
+
+          const SizedBox(height: 16),
+          _buildLabel('Report Date*'),
+          const SizedBox(height: 8),
           TextFormField(
             controller: _dateController,
             readOnly: true,
-            decoration: InputDecoration(
-              hintText: 'Select Date',
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.calendar_today),
-                onPressed: _pickDate,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+            decoration: _inputDecoration('Select Date', suffix: Icons.calendar_today),
             onTap: _pickDate,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select a date';
-              }
-              return null;
-            },
+            validator: (v) => (v == null || v.isEmpty) ? 'Please select a date' : null,
           ),
 
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Your Latitude'),
-          const SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              hintText: '',
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
+          const SizedBox(height: 16),
+          _buildLabel('Your Latitude'),
+          const SizedBox(height: 8),
+          TextField(controller: _yourLatitudeController, decoration: _inputDecoration('')),
 
+          const SizedBox(height: 16),
+          _buildLabel('Your Longitude'),
+          const SizedBox(height: 8),
+          TextField(controller: _yourLongitudeController, decoration: _inputDecoration('')),
 
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Your Longitude'),
-          const SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              hintText: '',
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
+          const SizedBox(height: 16),
+          _buildLabel('Retailer’s Latitude:'),
+          const SizedBox(height: 8),
+          TextField(controller: _custLatitudeController, decoration: _inputDecoration('')),
 
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Retailers Latitude:'),
-          const SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              hintText: '',
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Retailers Longitude:'),
-          const SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              hintText: '',
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          _buildLabel(context, 'Distance:'),
-          const SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              hintText: '',
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-
+          const SizedBox(height: 16),
+          _buildLabel('Retailer’s Longitude:'),
+          const SizedBox(height: 8),
+          TextField(controller: _custLongitudeController, decoration: _inputDecoration('')),
 
           const SizedBox(height: 30),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  // implement upload logic for row i
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Capture Your Location'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // implement upload logic for row i
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Capture Customer Location'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // implement upload logic for row i
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
-                ),
-                child: const Text('IN'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // implement upload logic for row i
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Exception Entry'),
-              ),
-              const SizedBox(height: 20),
-            ],
-          )
+          _buildButton('Capture Your Location', _captureYourLocation),
+          const SizedBox(height: 12),
+          _buildButton('Capture Customer Location', _captureCustomerLocation),
+          const SizedBox(height: 12),
+          _buildButton('IN', () {
+            // TODO: IN logic
+          }),
+          const SizedBox(height: 12),
+          _buildButton('Exception Entry', () {
+            // TODO: exception logic
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildLabel(BuildContext context, String text) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-      ),
-    );
-  }
+  Widget _buildLabel(String text) => Text(
+    text,
+    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+  );
 
   Widget _dropDownField({
     required String selected,
     required List<String> items,
     required ValueChanged<String?> onChanged,
-  }) {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade400, width: 1),
-        color: Colors.white,
-      ),
-      child: DropdownButton<String>(
-        isExpanded: true,
-        underline: Container(),
-        value: selected,
-        onChanged: onChanged,
-        items: items
-            .map((value) => DropdownMenuItem(
-          value: value,
-          child: Text(value, style: const TextStyle(fontSize: 16)),
-        ))
-            .toList(),
-      ),
-    );
-  }
+  }) =>
+      Container(
+        height: 50,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade400),
+        ),
+        child: DropdownButton<String>(
+          isExpanded: true,
+          underline: const SizedBox(),
+          value: selected,
+          onChanged: onChanged,
+          items: items
+              .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+              .toList(),
+        ),
+      );
 
   Widget _searchableDropdownField({
     required String selected,
     required List<String> items,
     required ValueChanged<String?> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
+  }) =>
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade400),
+        ),
+        child: DropdownSearch<String>(
+          items: items,
+          selectedItem: selected,
+          onChanged: onChanged,
+          popupProps: PopupProps.menu(
+            showSearchBox: true,
+            searchFieldProps: const TextFieldProps(
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                hintStyle: TextStyle(color: Colors.black),
+                fillColor: Colors.white,
+                filled: true,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
+            ),
+            itemBuilder: (c, item, sel) => Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                item,
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+          ),
+          dropdownDecoratorProps: DropDownDecoratorProps(
+            dropdownSearchDecoration: InputDecoration(
+              hintText: '',
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ),
+      );
+
+  InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
+      InputDecoration(
+        hintText: hint,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        suffixIcon: suffix != null ? IconButton(icon: Icon(suffix), onPressed: _pickDate) : null,
+      );
+
+  Widget _iconButton(IconData icon, VoidCallback onPressed) => Container(
+    height: 50,
+    width: 50,
+    decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+    child: IconButton(icon: Icon(icon, color: Colors.white), onPressed: onPressed),
+  );
+
+  Widget _buildButton(String label, VoidCallback onPressed) => ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      foregroundColor: Colors.white,
+      backgroundColor: Colors.blue,
+      padding: const EdgeInsets.symmetric(vertical: 15),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade400, width: 1),
-        color: Colors.white,
       ),
-      child: DropdownSearch<String>(
-        items: items,
-        selectedItem: selected,
-        onChanged: onChanged,
-        dropdownDecoratorProps: const DropDownDecoratorProps(
-          baseStyle: TextStyle(fontSize: 16),
-          dropdownSearchDecoration: InputDecoration.collapsed(hintText: ''),
-        ),
-        popupProps: PopupProps.menu(
-          showSearchBox: true,
-          searchFieldProps: const TextFieldProps(
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 8),
-            ),
-          ),
-          itemBuilder: _popupItemBuilder,
-          fit: FlexFit.loose,
-        ),
-      ),
-    );
-  }
-
-  Widget _popupItemBuilder(
-      BuildContext context, String item, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      child: Text(item, style: const TextStyle(fontSize: 16)),
-    );
-  }
-
-  Widget _buildTextField(String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextFormField(
-          maxLines: 3,
-          decoration: InputDecoration(
-            hintText: label,
-            hintStyle: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 16,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+    ),
+    child: Text(label, style: const TextStyle(fontSize: 18)),
+  );
 }
-
