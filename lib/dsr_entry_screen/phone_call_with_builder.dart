@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/work_from_home.dart';
+import 'package:image_picker/image_picker.dart'; // Import the image_picker package
+import 'dart:io'; // Import dart:io for File
+import 'package:learning2/dsr_entry_screen/dsr_entry.dart';
 
 import 'Meeting_with_new_purchaser.dart';
 import 'Meetings_With_Contractor.dart';
 import 'any_other_activity.dart';
 import 'btl_activites.dart';
 import 'check_sampling_at_site.dart';
-import 'dsr_entry.dart';
 import 'dsr_retailer_in_out.dart';
 import 'internal_team_meeting.dart';
 import 'office_work.dart';
@@ -21,10 +23,10 @@ class PhoneCallWithBuilder extends StatefulWidget {
   @override
   State<PhoneCallWithBuilder> createState() => _PhoneCallWithBuilderState();
 }
+
 final _formKey = GlobalKey<FormState>();
 
 class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
-
   String? _processItem = 'Select';
   final List<String> _processdropdownItems = [
     'Select',
@@ -66,30 +68,126 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
   String _areaCode = 'Select';
   final List<String> _majorCitiesInIndia = [
     'Select',
-    'Agra', 'Ahmedabad', 'Ajmer', 'Akola', 'Aligarh',
-    'Allahabad', 'Alwar', 'Ambala', 'Amravati', 'Amritsar',
-    'Anand', 'Anantapur', 'Aurangabad', 'Asansol', 'Bareilly',
-    'Bengaluru', 'Belgaum', 'Bhagalpur', 'Bhavnagar', 'Bhilai',
-    'Bhiwandi', 'Bhopal', 'Bhubaneswar', 'Bikaner', 'Bilaspur',
-    'Bokaro Steel City', 'Chandigarh', 'Chennai', 'Coimbatore', 'Cuttack',
-    'Dehradun', 'Delhi', 'Dhanbad', 'Durgapur', 'Erode',
-    'Faridabad', 'Firozabad', 'Gandhinagar', 'Ghaziabad', 'Gorakhpur',
-    'Guntur', 'Gurgaon', 'Guwahati', 'Gwalior', 'Haldwani',
-    'Haridwar', 'Hubli-Dharwad', 'Hyderabad', 'Imphal', 'Indore',
-    'Itanagar', 'Jabalpur', 'Jaipur', 'Jalandhar', 'Jammu',
-    'Jamshedpur', 'Jhansi', 'Jodhpur', 'Junagadh', 'Kakinada',
-    'Kalyan-Dombivli', 'Kanpur', 'Kochi', 'Kolhapur', 'Kolkata',
-    'Kollam', 'Kota', 'Kozhikode', 'Kurnool', 'Lucknow',
-    'Ludhiana', 'Madurai', 'Malappuram', 'Mangalore', 'Meerut',
-    'Mira-Bhayandar', 'Moradabad', 'Mumbai', 'Mysuru', 'Nagpur',
-    'Nanded', 'Nashik', 'Navi Mumbai', 'Nellore', 'Noida',
-    'Patna', 'Pimpri-Chinchwad', 'Prayagraj', 'Pune', 'Raipur',
-    'Rajkot', 'Rajahmundry', 'Ranchi', 'Rohtak', 'Rourkela',
-    'Saharanpur', 'Salem', 'Sangli-Miraj & Kupwad', 'Shillong', 'Shimla',
-    'Siliguri', 'Solapur', 'Srinagar', 'Surat', 'Thane',
-    'Thiruvananthapuram', 'Thrissur', 'Tiruchirappalli', 'Tirunelveli', 'Tiruppur',
-    'Udaipur', 'Ujjain', 'Ulhasnagar', 'Vadodara', 'Varanasi',
-    'Vasai-Virar', 'Vijayawada', 'Visakhapatnam', 'Warangal', 'Yamunanagar',
+    'Agra',
+    'Ahmedabad',
+    'Ajmer',
+    'Akola',
+    'Aligarh',
+    'Allahabad',
+    'Alwar',
+    'Ambala',
+    'Amravati',
+    'Amritsar',
+    'Anand',
+    'Anantapur',
+    'Aurangabad',
+    'Asansol',
+    'Bareilly',
+    'Bengaluru',
+    'Belgaum',
+    'Bhagalpur',
+    'Bhavnagar',
+    'Bhilai',
+    'Bhiwandi',
+    'Bhopal',
+    'Bhubaneswar',
+    'Bikaner',
+    'Bilaspur',
+    'Bokaro Steel City',
+    'Chandigarh',
+    'Chennai',
+    'Coimbatore',
+    'Cuttack',
+    'Dehradun',
+    'Delhi',
+    'Dhanbad',
+    'Durgapur',
+    'Erode',
+    'Faridabad',
+    'Firozabad',
+    'Gandhinagar',
+    'Ghaziabad',
+    'Gorakhpur',
+    'Guntur',
+    'Gurgaon',
+    'Guwahati',
+    'Gwalior',
+    'Haldwani',
+    'Haridwar',
+    'Hubli-Dharwad',
+    'Hyderabad',
+    'Imphal',
+    'Indore',
+    'Itanagar',
+    'Jabalpur',
+    'Jaipur',
+    'Jalandhar',
+    'Jammu',
+    'Jamshedpur',
+    'Jhansi',
+    'Jodhpur',
+    'Junagadh',
+    'Kakinada',
+    'Kalyan-Dombivli',
+    'Kanpur',
+    'Kochi',
+    'Kolhapur',
+    'Kolkata',
+    'Kollam',
+    'Kota',
+    'Kozhikode',
+    'Kurnool',
+    'Lucknow',
+    'Ludhiana',
+    'Madurai',
+    'Malappuram',
+    'Mangalore',
+    'Meerut',
+    'Mira-Bhayandar',
+    'Moradabad',
+    'Mumbai',
+    'Mysuru',
+    'Nagpur',
+    'Nanded',
+    'Nashik',
+    'Navi Mumbai',
+    'Nellore',
+    'Noida',
+    'Patna',
+    'Pimpri-Chinchwad',
+    'Prayagraj',
+    'Pune',
+    'Raipur',
+    'Rajkot',
+    'Rajahmundry',
+    'Ranchi',
+    'Rohtak',
+    'Rourkela',
+    'Saharanpur',
+    'Salem',
+    'Sangli-Miraj & Kupwad',
+    'Shillong',
+    'Shimla',
+    'Siliguri',
+    'Solapur',
+    'Srinagar',
+    'Surat',
+    'Thane',
+    'Thiruvananthapuram',
+    'Thrissur',
+    'Tiruchirappalli',
+    'Tirunelveli',
+    'Tiruppur',
+    'Udaipur',
+    'Ujjain',
+    'Ulhasnagar',
+    'Vadodara',
+    'Varanasi',
+    'Vasai-Virar',
+    'Vijayawada',
+    'Visakhapatnam',
+    'Warangal',
+    'Yamunanagar',
   ];
 
   // City coordinates mapping
@@ -128,9 +226,14 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
   }
 
   List<int> _uploadRows = [0];
+  List<File?> _selectedImages = [null]; // To hold selected images for each row
+  final ImagePicker _picker = ImagePicker();
+
+
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
+      _selectedImages.add(null); // Initialize with null for the new row
     });
   }
 
@@ -138,7 +241,40 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
+      _selectedImages.removeLast(); // Remove the last image entry
     });
+  }
+
+  Future<void> _pickImage(int index) async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImages[index] = File(pickedFile.path);
+      });
+    } else {
+      print('No image selected.');
+    }
+  }
+
+  void _showImageDialog(File imageFile) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.contain,
+                image: FileImage(imageFile),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // Location controllers
@@ -162,7 +298,10 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
               MaterialPageRoute(builder: (context) => DsrEntry()),
             );
           },
-          icon: Icon(Icons.arrow_back,color: Colors.white,),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
         ),
         title: const Text(
           'DSR Entry',
@@ -455,8 +594,10 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                       _areaCode = val;
                       // Set latitude and longitude based on the selected area code
                       if (_cityCoordinates.containsKey(val)) {
-                        _custLatitudeController.text = _cityCoordinates[val]!['latitude']!.toString();
-                        _custLongitudeController.text = _cityCoordinates[val]!['longitude']!.toString();
+                        _custLatitudeController.text =
+                            _cityCoordinates[val]!['latitude']!.toString();
+                        _custLongitudeController.text =
+                            _cityCoordinates[val]!['longitude']!.toString();
                       }
                     });
                   }
@@ -464,7 +605,9 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
               ),
 
               // ! Purchaser
-              SizedBox(height: 20,),
+              SizedBox(
+                height: 20,
+              ),
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                 child: const Text(
@@ -504,7 +647,6 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
               ),
               const SizedBox(height: 20),
 
-
               // ! Code with search icon
               _buildLabel('Code *:'),
               const SizedBox(height: 8),
@@ -531,7 +673,9 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
               _buildTextField('Contractor Working at Site'),
 
               //! Met With
-              SizedBox(height: 20,),
+              SizedBox(
+                height: 20,
+              ),
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                 child: const Text(
@@ -601,9 +745,8 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                       child: Row(
                         children: [
                           ElevatedButton(
-                            onPressed: () {
-                              // implement upload logic for row i
-                            },
+                            onPressed: () =>
+                                _pickImage(i), // Call _pickImage with the index
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -618,7 +761,17 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                           const SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: () {
-                              // implement view logic for row i
+                              if (_selectedImages[i] != null) {
+                                _showImageDialog(
+                                    _selectedImages[i]!); // Show image for the current row
+                              } else {
+                                // Optionally show a message if no image is selected
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No image selected to view.')),
+                                );
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
@@ -665,7 +818,9 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 30,),
+              SizedBox(
+                height: 30,
+              ),
 
               //! 3 Submit Button
               Column(
@@ -685,10 +840,13 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
                         child: const Text('Submit & New')),
                   ),
-                  SizedBox(height: 20,),
+                  SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -703,10 +861,13 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
                         child: const Text('Submit & Exit')),
                   ),
-                  SizedBox(height: 20,),
+                  SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -721,10 +882,14 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                        child: const Text('Click to see Submitted Data')),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
+                        child:
+                        const Text('Click to see Submitted Data')),
                   ),
-                  SizedBox(height: 20,),
+                  SizedBox(
+                    height: 20,
+                  ),
                 ],
               )
             ],
@@ -733,6 +898,7 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
       ),
     );
   }
+
   Widget _buildTextField(String label) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -761,6 +927,7 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
       ],
     );
   }
+
   Widget _buildLabel(String text) => MediaQuery(
     data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
     child: Text(
@@ -768,6 +935,7 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
     ),
   );
+
   Widget _searchableDropdownField({
     required String selected,
     required List<String> items,
@@ -803,7 +971,8 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
             filled: true,
             fillColor: Colors.white,
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: Colors.grey.shade400),
@@ -812,19 +981,22 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
         ),
       );
 
-
   InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
       InputDecoration(
         hintText: hint,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        suffixIcon: suffix != null ? IconButton(icon: Icon(suffix), onPressed: _pickDate) : null,
+        suffixIcon: suffix != null
+            ? IconButton(icon: Icon(suffix), onPressed: _pickDate)
+            : null,
       );
 
   Widget _iconButton(IconData icon, VoidCallback onPressed) => Container(
     height: 50,
     width: 50,
-    decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
-    child: IconButton(icon: Icon(icon, color: Colors.white), onPressed: onPressed),
+    decoration: BoxDecoration(
+        color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+    child: IconButton(
+        icon: Icon(icon, color: Colors.white), onPressed: onPressed),
   );
 }

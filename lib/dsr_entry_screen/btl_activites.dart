@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart'; // Import image_picker
+import 'dart:io'; // Import for File
 //import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart'; // Ensure these imports are correct.  If these files are in the same directory, you do not need the  'dsr_entry_screen' path.
 //import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
 //import 'package:learning2/dsr_entry_screen/work_from_home.dart';
@@ -63,7 +65,6 @@ class _BtlActivitesState extends State<BtlActivites> {
     'Other BTL Activities',
   ];
 
-
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _reportDateController =
   TextEditingController(); // Added controller for Report Date
@@ -75,6 +76,10 @@ class _BtlActivitesState extends State<BtlActivites> {
   TextEditingController();
   final TextEditingController _townController = TextEditingController();
   final TextEditingController _learningsController = TextEditingController();
+
+  final ImagePicker _picker = ImagePicker(); // Add this line
+  List<int> _uploadRows = [0];
+  List<File?> _imageFiles = [null]; // To store selected image files
 
   @override
   void dispose() {
@@ -119,11 +124,10 @@ class _BtlActivitesState extends State<BtlActivites> {
     }
   }
 
-  List<int> _uploadRows = [0];
-
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
+      _imageFiles.add(null); // Add null for the new row
     });
   }
 
@@ -131,7 +135,51 @@ class _BtlActivitesState extends State<BtlActivites> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
+      _imageFiles.removeLast();
     });
+  }
+
+  Future<void> _uploadImage(int index) async {
+    // Add this function
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _imageFiles[index] = File(image.path);
+      });
+    } else {
+      print('No image selected for row $index.');
+    }
+  }
+
+  // Function to display the image
+  void _viewImage(int index) {
+    if (_imageFiles[index] != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Image Preview')),
+            body: Center(
+              child: Image.file(_imageFiles[index]!),
+            ),
+          ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Image'),
+          content: const Text('Please upload an image first.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -205,8 +253,8 @@ class _BtlActivitesState extends State<BtlActivites> {
                       .map(
                         (value) => DropdownMenuItem(
                       value: value,
-                      child:
-                      Text(value, style: const TextStyle(fontSize: 16)),
+                      child: Text(value,
+                          style: const TextStyle(fontSize: 16)),
                     ),
                   )
                       .toList(),
@@ -339,8 +387,7 @@ class _BtlActivitesState extends State<BtlActivites> {
                       }
 
                       // 🔹 Navigate on Phone call with Unregistered Purchasers
-                      if (newValue ==
-                          'Phone call with Unregistered Purchasers') {
+                      if (newValue == 'Phone call with Unregistered Purchasers') {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) =>
@@ -558,9 +605,8 @@ class _BtlActivitesState extends State<BtlActivites> {
                       child: Row(
                         children: [
                           ElevatedButton(
-                            onPressed: () {
-                              // implement upload logic for row i
-                            },
+                            onPressed: () =>
+                                _uploadImage(i), // Call the _uploadImage function, added this.
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -574,9 +620,8 @@ class _BtlActivitesState extends State<BtlActivites> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () {
-                              // implement view logic for row i
-                            },
+                            onPressed: () =>
+                                _viewImage(i), // Pass the index
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -622,7 +667,9 @@ class _BtlActivitesState extends State<BtlActivites> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 30,),
+              const SizedBox(
+                height: 30,
+              ),
 
               //! 3 Submit Button
               Column(
@@ -642,10 +689,13 @@ class _BtlActivitesState extends State<BtlActivites> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
                         child: const Text('Submit & New')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -660,10 +710,13 @@ class _BtlActivitesState extends State<BtlActivites> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
                         child: const Text('Submit & Exit')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -678,10 +731,13 @@ class _BtlActivitesState extends State<BtlActivites> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
                         child: const Text('Click to see Submitted Data')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                 ],
               )
             ],
@@ -691,3 +747,4 @@ class _BtlActivitesState extends State<BtlActivites> {
     );
   }
 }
+

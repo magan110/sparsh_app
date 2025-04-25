@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   dropdown_search: ^5.0.2
   geolocator: ^9.0.2
+  image_picker: ^1.1.2
 
 
 

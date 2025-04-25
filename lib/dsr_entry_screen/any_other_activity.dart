@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/work_from_home.dart';
@@ -23,7 +25,6 @@ class AnyOtherActivity extends StatefulWidget {
 }
 
 class _AnyOtherActivityState extends State<AnyOtherActivity> {
-
   String? _processItem = 'Select';
   final List<String> _processdropdownItems = [
     'Select',
@@ -49,15 +50,20 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
   ];
 
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _reportDateController = TextEditingController(); // Added controller for Report Date
+  final TextEditingController _reportDateController =
+  TextEditingController(); // Added controller for Report Date
   DateTime? _selectedDate;
   DateTime? _selectedReportDate; // Added state variable for Report Date
 
   List<int> _uploadRows = [0];
+  final ImagePicker _picker =
+  ImagePicker(); // Initialize ImagePicker, corrected initialization
+  List<File?> _imageFiles = [null]; // To store selected image files
 
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
+      _imageFiles.add(null); // Add null for the new row
     });
   }
 
@@ -65,14 +71,8 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
+      _imageFiles.removeLast();
     });
-  }
-
-  @override
-  void dispose() {
-    _dateController.dispose();
-    _reportDateController.dispose(); // Dispose the new controller
-    super.dispose();
   }
 
   Future<void> _pickDate() async {
@@ -91,7 +91,7 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
     }
   }
 
-  Future<void> _pickReportDate() async { // Function to pick report date
+  Future<void> _pickReportDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -107,6 +107,56 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
     }
   }
 
+  Future<void> _uploadImage(int index) async {
+    // corrected function
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _imageFiles[index] = File(image.path);
+      });
+    } else {
+      print('No image selected for row $index.');
+    }
+  }
+
+  // Function to display the image
+  void _viewImage(int index) {
+    if (_imageFiles[index] != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Image Preview')),
+            body: Center(
+              child: Image.file(_imageFiles[index]!),
+            ),
+          ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Image'),
+          content: const Text('Please upload an image first.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _reportDateController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,7 +169,10 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
               MaterialPageRoute(builder: (context) => DsrEntry()),
             );
           },
-          icon: Icon(Icons.arrow_back,color: Colors.white,),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
         ),
         title: const Text(
           'DSR Entry',
@@ -369,13 +422,15 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
               ),
               const SizedBox(height: 10),
               TextFormField(
-                controller: _reportDateController, // Use the new controller
+                controller: _reportDateController,
+                // Use the new controller
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Select Date',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.calendar_today),
-                    onPressed: _pickReportDate, // Use the new function
+                    onPressed:
+                    _pickReportDate, // Use the new function, corrected it.
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -416,9 +471,8 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                       child: Row(
                         children: [
                           ElevatedButton(
-                            onPressed: () {
-                              // implement upload logic for row i
-                            },
+                            onPressed: () =>
+                                _uploadImage(i), // Call the _uploadImage function, corrected it.
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -432,9 +486,8 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () {
-                              // implement view logic for row i
-                            },
+                            onPressed: () =>
+                                _viewImage(i), // Pass the index
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -480,7 +533,9 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 30,),
+              const SizedBox(
+                height: 30,
+              ),
 
               //! 3 Submit Button
               Column(
@@ -500,10 +555,13 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
                         child: const Text('Submit & New')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -518,10 +576,13 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
                         child: const Text('Submit & Exit')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -536,10 +597,14 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                        child: const Text('Click to see Submitted Data')),
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaleFactor: 1.0),
+                        child:
+                        const Text('Click to see Submitted Data')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                 ],
               )
             ],
@@ -631,7 +696,6 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
         ),
       );
 
-
   InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
       InputDecoration(
         hintText: hint,
@@ -652,3 +716,4 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
         icon: Icon(icon, color: Colors.white), onPressed: onPressed),
   );
 }
+

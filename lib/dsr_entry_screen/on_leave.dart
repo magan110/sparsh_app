@@ -1,3 +1,4 @@
+import 'dart:io'; // Import for File
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
@@ -13,6 +14,8 @@ import 'dsr_retailer_in_out.dart';
 import 'internal_team_meeting.dart';
 import 'office_work.dart';
 import 'on_leave.dart';
+import 'package:image_picker/image_picker.dart'; // Import the image_picker package
+
 
 class OnLeave extends StatefulWidget {
   const OnLeave({super.key});
@@ -22,7 +25,6 @@ class OnLeave extends StatefulWidget {
 }
 
 class _OnLeaveState extends State<OnLeave> {
-
   String? _processItem = 'Select';
   final List<String> _processdropdownItems = [
     'Select',
@@ -48,9 +50,13 @@ class _OnLeaveState extends State<OnLeave> {
   ];
 
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _reportDateController = TextEditingController(); // Added controller for Report Date
+  final TextEditingController _reportDateController =
+  TextEditingController(); // Added controller for Report Date
   DateTime? _selectedDate;
   DateTime? _selectedReportDate; // Added state variable for Report Date
+
+  List<int> _uploadRows = [0];
+  List<File?> _imageFiles = [null]; // To store selected image files
 
   @override
   void dispose() {
@@ -75,7 +81,8 @@ class _OnLeaveState extends State<OnLeave> {
     }
   }
 
-  Future<void> _pickReportDate() async { // Function to pick report date
+  Future<void> _pickReportDate() async {
+    // Function to pick report date
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -91,11 +98,10 @@ class _OnLeaveState extends State<OnLeave> {
     }
   }
 
-  List<int> _uploadRows = [0];
-
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
+      _imageFiles.add(null); // Add null for the new row
     });
   }
 
@@ -103,7 +109,52 @@ class _OnLeaveState extends State<OnLeave> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
+      _imageFiles.removeLast();
     });
+  }
+
+  // Function to pick image from gallery
+  Future<void> _pickImage(int index) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFiles[index] = File(pickedFile.path);
+      });
+    } else {
+      print('No image selected.'); // Important for debugging
+    }
+  }
+
+  // Function to display the image
+  void _viewImage(int index) {
+    if (_imageFiles[index] != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Image Preview')),
+            body: Center(
+              child: Image.file(_imageFiles[index]!),
+            ),
+          ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Image'),
+          content: const Text('Please upload an image first.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -118,7 +169,10 @@ class _OnLeaveState extends State<OnLeave> {
               MaterialPageRoute(builder: (context) => DsrEntry()),
             );
           },
-          icon: Icon(Icons.arrow_back,color: Colors.white,),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
         ),
         title: const Text(
           'DSR Entry',
@@ -262,7 +316,8 @@ class _OnLeaveState extends State<OnLeave> {
                       }
 
                       // 🔹 Navigate on Internal Team Meetings / Review Meetings
-                      if (newValue == 'Internal Team Meetings / Review Meetings') {
+                      if (newValue ==
+                          'Internal Team Meetings / Review Meetings') {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const InternalTeamMeeting(),
@@ -368,7 +423,8 @@ class _OnLeaveState extends State<OnLeave> {
               ),
               const SizedBox(height: 10),
               TextFormField(
-                controller: _reportDateController, // Use the new controller
+                controller: _reportDateController,
+                // Use the new controller
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Select Date',
@@ -403,9 +459,7 @@ class _OnLeaveState extends State<OnLeave> {
                       child: Row(
                         children: [
                           ElevatedButton(
-                            onPressed: () {
-                              // implement upload logic for row i
-                            },
+                            onPressed: () => _pickImage(i), // Pass the index
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -419,9 +473,7 @@ class _OnLeaveState extends State<OnLeave> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () {
-                              // implement view logic for row i
-                            },
+                            onPressed: () => _viewImage(i), // Pass the index
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -467,8 +519,7 @@ class _OnLeaveState extends State<OnLeave> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 30,),
-
+              const SizedBox(height: 30),
               //! 3 Submit Button
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -487,10 +538,13 @@ class _OnLeaveState extends State<OnLeave> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context).copyWith(
+                            textScaleFactor: 1.0),
                         child: const Text('Submit & New')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -505,10 +559,13 @@ class _OnLeaveState extends State<OnLeave> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context).copyWith(
+                            textScaleFactor: 1.0),
                         child: const Text('Submit & Exit')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -523,10 +580,14 @@ class _OnLeaveState extends State<OnLeave> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                        child: const Text('Click to see Submitted Data')),
+                        data: MediaQuery.of(context).copyWith(
+                            textScaleFactor: 1.0),
+                        child:
+                        const Text('Click to see Submitted Data')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                 ],
               )
             ],
@@ -535,6 +596,7 @@ class _OnLeaveState extends State<OnLeave> {
       ),
     );
   }
+
   Widget _buildTextField(String label) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -564,3 +626,4 @@ class _OnLeaveState extends State<OnLeave> {
     );
   }
 }
+

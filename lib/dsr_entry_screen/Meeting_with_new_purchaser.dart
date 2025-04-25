@@ -3,12 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/work_from_home.dart';
+import 'package:learning2/dsr_entry_screen/dsr_entry.dart'; // Import DsrEntry
+import 'package:image_picker/image_picker.dart'; // Import the image_picker package
+import 'dart:io'; // Import dart:io for File
+
 import 'Meeting_with_new_purchaser.dart';
 import 'Meetings_With_Contractor.dart';
 import 'any_other_activity.dart';
 import 'btl_activites.dart';
 import 'check_sampling_at_site.dart';
-import 'dsr_entry.dart';
 import 'dsr_retailer_in_out.dart';
 import 'internal_team_meeting.dart';
 import 'office_work.dart';
@@ -18,11 +21,11 @@ class MeetingWithNewPurchaser extends StatefulWidget {
   const MeetingWithNewPurchaser({super.key});
 
   @override
-  State<MeetingWithNewPurchaser> createState() => _MeetingWithNewPurchaserState();
+  State<MeetingWithNewPurchaser> createState() =>
+      _MeetingWithNewPurchaserState();
 }
 
 class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
-
   String? _processItem = 'Select';
   final List<String> _processdropdownItems = [
     'Select',
@@ -48,9 +51,17 @@ class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
   ];
 
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _reportDateController = TextEditingController(); // Added controller for Report Date
+  final TextEditingController _reportDateController =
+  TextEditingController(); // Added controller for Report Date
   DateTime? _selectedDate;
   DateTime? _selectedReportDate; // Added state variable for Report Date
+
+  // Image Picker
+  final ImagePicker _picker = ImagePicker();
+  List<File?> _selectedImages = [
+    null
+  ]; // To hold selected images for each row
+  List<int> _uploadRows = [0];
 
   @override
   void dispose() {
@@ -75,7 +86,8 @@ class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
     }
   }
 
-  Future<void> _pickReportDate() async { // Function to pick report date
+  Future<void> _pickReportDate() async {
+    // Function to pick report date
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -91,6 +103,53 @@ class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
     }
   }
 
+  void _addRow() {
+    setState(() {
+      _uploadRows.add(_uploadRows.length);
+      _selectedImages.add(null); // Add null for the new image
+    });
+  }
+
+  void _removeRow() {
+    if (_uploadRows.length <= 1) return;
+    setState(() {
+      _uploadRows.removeLast();
+      _selectedImages.removeLast(); // remove last image
+    });
+  }
+
+  Future<void> _pickImage(int index) async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImages[index] = File(pickedFile.path);
+      });
+    } else {
+      print('No image selected.');
+    }
+  }
+
+  void _showImageDialog(File imageFile) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.contain,
+                image: FileImage(imageFile),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,7 +162,10 @@ class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
               MaterialPageRoute(builder: (context) => DsrEntry()),
             );
           },
-          icon: Icon(Icons.arrow_back,color: Colors.white,),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
         ),
         title: const Text(
           'DSR Entry',
@@ -359,19 +421,105 @@ class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
                   hintText: 'Select Date',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.calendar_today),
-                    onPressed: _pickReportDate, // Use the new function
+                    onPressed:
+                    _pickReportDate, // Use the new function
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onTap: _pickReportDate, // Use the new function
+                onTap:
+                _pickReportDate, // Use the new function
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please select a date';
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 20),
+              //! Image Upload , View Image , + , -
+              Column(
+                children: _uploadRows.map((i) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: () =>
+                                _pickImage(i), // Call _pickImage with the index
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.blue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 12),
+                            ),
+                            child: const Text('Upload Image'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_selectedImages[i] != null) {
+                                _showImageDialog(
+                                    _selectedImages[i]!); // Show image for the current row
+                              } else {
+                                // Optionally show a message if no image is selected
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No image selected to view.')),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 12),
+                            ),
+                            child: const Text('View Image'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _addRow,
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.yellow,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                            ),
+                            child: const Text('+'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _removeRow,
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.red,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                            ),
+                            child: const Text('-'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ],
           ),
@@ -380,3 +528,4 @@ class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
     );
   }
 }
+

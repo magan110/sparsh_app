@@ -1,3 +1,4 @@
+import 'dart:io'; // Import for File
 import 'package:flutter/material.dart';
 import 'package:learning2/dsr_entry_screen/dsr_retailer_in_out.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +11,7 @@ import 'btl_activites.dart';
 import 'check_sampling_at_site.dart';
 import 'dsr_entry.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:image_picker/image_picker.dart'; // Import the image_picker package
 
 import 'internal_team_meeting.dart';
 import 'office_work.dart';
@@ -30,8 +32,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
     'Update',
   ];
 
-  String? _activityItem =
-      'Meetings With Contractor / Stockist';
+  String? _activityItem = 'Meetings With Contractor / Stockist';
   final List<String> _activityDropDownItems = [
     'Select',
     'Personal Visit',
@@ -216,10 +217,12 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
   }
 
   List<int> _uploadRows = [0];
+  List<File?> _imageFiles = [null]; // To store selected image files
 
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
+      _imageFiles.add(null); // Add null for the new row
     });
   }
 
@@ -227,19 +230,63 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
+      _imageFiles.removeLast(); // Remove the corresponding image file
     });
   }
 
   // Location controllers
   final TextEditingController _yourLatitudeController = TextEditingController();
   final TextEditingController _yourLongitudeController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _custLatitudeController = TextEditingController();
   final TextEditingController _custLongitudeController =
-      TextEditingController();
+  TextEditingController();
 
   // Form key
   final _formKey = GlobalKey<FormState>();
+
+  // Function to pick image from gallery
+  Future<void> _pickImage(int index) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFiles[index] = File(pickedFile.path);
+      });
+    } else {
+      print('No image selected.'); // Important for debugging
+    }
+  }
+  // Function to display the image
+  void _viewImage(int index) {
+    if (_imageFiles[index] != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Image Preview')),
+            body: Center(
+              child: Image.file(_imageFiles[index]!),
+            ),
+          ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Image'),
+          content: const Text('Please upload an image first.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -267,6 +314,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Form(
+          key: _formKey, // Associate the form key
           child: ListView(
             children: [
               MediaQuery(
@@ -312,11 +360,11 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                   items: _processdropdownItems
                       .map(
                         (value) => DropdownMenuItem(
-                          value: value,
-                          child:
-                              Text(value, style: const TextStyle(fontSize: 16)),
-                        ),
-                      )
+                      value: value,
+                      child:
+                      Text(value, style: const TextStyle(fontSize: 16)),
+                    ),
+                  )
                       .toList(),
                 ),
               ),
@@ -387,7 +435,8 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                       }
 
                       // 🔹 Navigate on Meeting with New Purchaser(Trade Purchaser)/Retailer
-                      if (newValue == 'Meeting with New Purchaser(Trade Purchaser)/Retailer') {
+                      if (newValue ==
+                          'Meeting with New Purchaser(Trade Purchaser)/Retailer') {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const MeetingWithNewPurchaser(),
@@ -453,7 +502,8 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                       if (newValue == 'Phone call with Unregistered Purchasers') {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const PhoneCallWithUnregisterdPurchaser(),
+                            builder: (_) =>
+                            const PhoneCallWithUnregisterdPurchaser(),
                           ),
                         );
                       }
@@ -461,10 +511,10 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                   },
                   items: _activityDropDownItems
                       .map((value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(value,
-                                style: const TextStyle(fontSize: 16)),
-                          ))
+                    value: value,
+                    child: Text(value,
+                        style: const TextStyle(fontSize: 16)),
+                  ))
                       .toList(),
                 ),
               ),
@@ -591,11 +641,11 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                   items: _purchaserdropdownItems
                       .map(
                         (value) => DropdownMenuItem(
-                          value: value,
-                          child:
-                              Text(value, style: const TextStyle(fontSize: 16)),
-                        ),
-                      )
+                      value: value,
+                      child:
+                      Text(value, style: const TextStyle(fontSize: 16)),
+                    ),
+                  )
                       .toList(),
                 ),
               ),
@@ -607,14 +657,20 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
+                    child: TextFormField(
                       decoration: _inputDecoration('Purchaser code'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter purchaser code';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
                   _iconButton(
                     Icons.search,
-                    () {
+                        () {
                       // TODO: perform code search
                     },
                   ),
@@ -623,19 +679,51 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
 
               //! New Orders Received
               const SizedBox(height: 20),
-              _buildTextField('New Orders Received'),
+              TextFormField(
+                decoration: _inputDecoration('New Orders Received'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter new orders received';
+                  }
+                  return null;
+                },
+              ),
 
               //! Ugai Recovery Plans
               const SizedBox(height: 20),
-              _buildTextField('Ugai Recovery Plans'),
+              TextFormField(
+                decoration: _inputDecoration('Ugai Recovery Plans'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter ugai recovery plans';
+                  }
+                  return null;
+                },
+              ),
 
               //! Any Purchaser Grievances
               const SizedBox(height: 20),
-              _buildTextField('Any Purchaser Grievances'),
+              TextFormField(
+                decoration: _inputDecoration('Any Purchaser Grievances'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter purchaser grievances';
+                  }
+                  return null;
+                },
+              ),
 
               //! Any Other Points
               const SizedBox(height: 20),
-              _buildTextField('Any Other Points'),
+              TextFormField(
+                decoration: _inputDecoration('Any Other Points'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter any other points';
+                  }
+                  return null;
+                },
+              ),
 
               //! Image Upload , view Image , + , -
               Column(
@@ -647,9 +735,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                       child: Row(
                         children: [
                           ElevatedButton(
-                            onPressed: () {
-                              // implement upload logic for row i
-                            },
+                            onPressed: () => _pickImage(i), // Pass the index
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -663,9 +749,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () {
-                              // implement view logic for row i
-                            },
+                            onPressed: () => _viewImage(i), // Pass the index
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -711,7 +795,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 30,),
+              const SizedBox(height: 30),
 
               //! 3 Submit Button
               Column(
@@ -719,7 +803,11 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      if (_formKey.currentState!.validate()) {
+                        // TODO:  Submit data and add new entry.
+                        print('Form is valid. Submitting...');
+                        _showSuccessDialog("Datasubmitted successfully!");
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -731,13 +819,18 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context).copyWith(
+                            textScaleFactor: 1.0),
                         child: const Text('Submit & New')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      if (_formKey.currentState!.validate()) {
+                        // TODO: Submit data and exit.
+                        print('Form is valid. Submitting and exiting...');
+                        _showSuccessDialog("Data submitted and exited!");
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -749,10 +842,11 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                        data: MediaQuery.of(context).copyWith(
+                            textScaleFactor: 1.0),
                         child: const Text('Submit & Exit')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       // implement upload logic for row i
@@ -767,10 +861,12 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                           horizontal: 24, vertical: 12),
                     ),
                     child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                        child: const Text('Click to see Submitted Data')),
+                        data: MediaQuery.of(context).copyWith(
+                            textScaleFactor: 1.0),
+                        child:
+                        const Text('Click to see Submitted Data')),
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(height: 20),
                 ],
               )
             ],
@@ -805,18 +901,24 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter ${label.toLowerCase()}';
+            }
+            return null;
+          },
         ),
       ],
     );
   }
 
   Widget _buildLabel(String text) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        ),
-      );
+    data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+    ),
+  );
 
   Widget _searchableDropdownField({
     required String selected,
@@ -860,14 +962,19 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
             ),
           ),
         ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select an option';
+          }
+          return null;
+        },
       );
-
 
   InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
       InputDecoration(
         hintText: hint,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         suffixIcon: suffix != null
             ? IconButton(icon: Icon(suffix), onPressed: _pickDate)
@@ -875,11 +982,27 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
       );
 
   Widget _iconButton(IconData icon, VoidCallback onPressed) => Container(
-        height: 50,
-        width: 50,
-        decoration: BoxDecoration(
-            color: Colors.blue, borderRadius: BorderRadius.circular(10)),
-        child: IconButton(
-            icon: Icon(icon, color: Colors.white), onPressed: onPressed),
-      );
+    height: 50,
+    width: 50,
+    decoration: BoxDecoration(
+        color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+    child: IconButton(
+        icon: Icon(icon, color: Colors.white), onPressed: onPressed),
+  );
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart'; // Import the image_picker package
 import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/work_from_home.dart';
@@ -72,12 +74,21 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
     'Rejected',
   ];
 
-
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _reportDateController =
-      TextEditingController(); // Added controller for Report Date
+  TextEditingController(); // Added controller for Report Date
   DateTime? _selectedDate;
   DateTime? _selectedReportDate; // Added state variable for Report Date
+
+  // List to hold selected images paths for each row
+  List<List<String>> _selectedImagePaths = [[]]; // Initialize with an empty list
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the list of image paths with an empty list for the first row.
+    _selectedImagePaths = [[]];
+  }
 
   @override
   void dispose() {
@@ -124,6 +135,8 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
+      _selectedImagePaths.add(
+          []); // Add a new empty list for the new row's images
     });
   }
 
@@ -131,7 +144,24 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
+      _selectedImagePaths.removeLast(); // Remove the last image path list
     });
+  }
+
+  // Function to pick images for a specific row
+  Future<void> _pickImages(int rowIndex) async {
+    final picker = ImagePicker();
+    final pickedFiles = await picker.pickMultiImage();
+
+    if (pickedFiles != null && pickedFiles.isNotEmpty) {
+      setState(() {
+        // Clear previous images.
+        _selectedImagePaths[rowIndex] = pickedFiles.map((e) => e.path).toList();
+      });
+    } else {
+      // User canceled the image selection.  No need to show a message.
+      print('No images selected.');
+    }
   }
 
   @override
@@ -204,11 +234,11 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                   items: _processdropdownItems
                       .map(
                         (value) => DropdownMenuItem(
-                          value: value,
-                          child:
-                              Text(value, style: const TextStyle(fontSize: 16)),
-                        ),
-                      )
+                      value: value,
+                      child:
+                      Text(value, style: const TextStyle(fontSize: 16)),
+                    ),
+                  )
                       .toList(),
                 ),
               ),
@@ -344,7 +374,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) =>
-                                const PhoneCallWithUnregisterdPurchaser(),
+                            const PhoneCallWithUnregisterdPurchaser(),
                           ),
                         );
                       }
@@ -352,10 +382,10 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                   },
                   items: _activityDropDownItems
                       .map((value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(value,
-                                style: const TextStyle(fontSize: 16)),
-                          ))
+                    value: value,
+                    child: Text(value,
+                        style: const TextStyle(fontSize: 16)),
+                  ))
                       .toList(),
                 ),
               ),
@@ -461,11 +491,11 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                   items: _sitedropdownItems
                       .map(
                         (value) => DropdownMenuItem(
-                          value: value,
-                          child:
-                              Text(value, style: const TextStyle(fontSize: 16)),
-                        ),
-                      )
+                      value: value,
+                      child:
+                      Text(value, style: const TextStyle(fontSize: 16)),
+                    ),
+                  )
                       .toList(),
                 ),
               ),
@@ -512,11 +542,11 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                   items: _statusDropdownItems
                       .map(
                         (value) => DropdownMenuItem(
-                          value: value,
-                          child:
-                              Text(value, style: const TextStyle(fontSize: 16)),
-                        ),
-                      )
+                      value: value,
+                      child:
+                      Text(value, style: const TextStyle(fontSize: 16)),
+                    ),
+                  )
                       .toList(),
                 ),
               ),
@@ -575,7 +605,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
 
               //! Image Upload , view Image , + , -
               Column(
-                children: _uploadRows.map((i) {
+                children: _uploadRows.map((rowIndex) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: SingleChildScrollView(
@@ -583,9 +613,8 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                       child: Row(
                         children: [
                           ElevatedButton(
-                            onPressed: () {
-                              // implement upload logic for row i
-                            },
+                            onPressed: () => _pickImages(
+                                rowIndex), // Pass the row index to _pickImages
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -601,6 +630,72 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                           ElevatedButton(
                             onPressed: () {
                               // implement view logic for row i
+                              if (_selectedImagePaths[rowIndex].isNotEmpty) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => Dialog(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text(
+                                            'Selected Images',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          // Use a ListView.builder to display multiple images
+                                          SizedBox(
+                                            height: 200, // Limit the height
+                                            width:
+                                            double.maxFinite, // Make it wide
+                                            child: ListView.builder(
+                                              scrollDirection:
+                                              Axis.horizontal, // Horizontal list
+                                              itemCount: _selectedImagePaths[
+                                              rowIndex]
+                                                  .length,
+                                              itemBuilder: (context, index) {
+                                                final imagePath =
+                                                _selectedImagePaths[
+                                                rowIndex][index];
+                                                return Padding(
+                                                  padding:
+                                                  const EdgeInsets.only(
+                                                      right: 8.0),
+                                                  child: Image.file(
+                                                    File(imagePath),
+                                                    height: 180, // Adjust as needed
+                                                    width: 180,
+                                                    fit: BoxFit
+                                                        .contain, // Or any other fit
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                    Text('No images selected for this row.'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
@@ -699,7 +794,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+// implement upload logic for row i
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -758,12 +853,12 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
   }
 
   Widget _buildLabel(String text) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        ),
-      );
+    data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+    ),
+  );
 
   Widget _searchableDropdownField({
     required String selected,
@@ -819,7 +914,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
       InputDecoration(
         hintText: hint,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         suffixIcon: suffix != null
             ? IconButton(icon: Icon(suffix), onPressed: _pickDate)
@@ -827,11 +922,12 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
       );
 
   Widget _iconButton(IconData icon, VoidCallback onPressed) => Container(
-        height: 50,
-        width: 50,
-        decoration: BoxDecoration(
-            color: Colors.blue, borderRadius: BorderRadius.circular(10)),
-        child: IconButton(
-            icon: Icon(icon, color: Colors.white), onPressed: onPressed),
-      );
+    height: 50,
+    width: 50,
+    decoration: BoxDecoration(
+        color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+    child: IconButton(
+        icon: Icon(icon, color: Colors.white), onPressed: onPressed),
+  );
 }
+

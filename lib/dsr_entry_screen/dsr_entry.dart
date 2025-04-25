@@ -1,7 +1,7 @@
-// lib/dsr_entry.dart
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart'; // Import the image_picker package
 import 'package:learning2/dsr_entry_screen/Meeting_with_new_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/any_other_activity.dart';
 import 'package:learning2/dsr_entry_screen/btl_activites.dart';
@@ -13,7 +13,6 @@ import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/work_from_home.dart';
 import 'package:learning2/screens/Home_screen.dart';
-
 import 'Meetings_With_Contractor.dart';
 import 'dsr_retailer_in_out.dart';
 
@@ -60,6 +59,11 @@ class _DsrEntryState extends State<DsrEntry> {
 
   // Manages dynamic upload rows
   List<int> _uploadRows = [0];
+  // List to hold the selected images for each row
+  List<File?> _selectedImages = [null]; // Initialize with null for the first row
+
+  // Image picker instance
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -86,6 +90,7 @@ class _DsrEntryState extends State<DsrEntry> {
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
+      _selectedImages.add(null); // Add null for the new row's image
     });
   }
 
@@ -93,7 +98,21 @@ class _DsrEntryState extends State<DsrEntry> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
+      _selectedImages.removeLast(); // Remove the last image entry
     });
+  }
+
+  // Function to handle image picking for a specific row
+  Future<void> _pickImage(int index) async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImages[index] = File(pickedFile.path);
+      });
+    } else {
+      print('No image selected.'); // Important for debugging
+    }
   }
 
   @override
@@ -170,11 +189,11 @@ class _DsrEntryState extends State<DsrEntry> {
                     items: _processdropdownItems
                         .map(
                           (value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(value,
-                                style: const TextStyle(fontSize: 16)),
-                          ),
-                        )
+                        value: value,
+                        child: Text(value,
+                            style: const TextStyle(fontSize: 16)),
+                      ),
+                    )
                         .toList(),
                   ),
                 ),
@@ -316,10 +335,10 @@ class _DsrEntryState extends State<DsrEntry> {
                     },
                     items: _activityDropDownItems
                         .map((value) => DropdownMenuItem(
-                              value: value,
-                              child: Text(value,
-                                  style: const TextStyle(fontSize: 16)),
-                            ))
+                      value: value,
+                      child: Text(value,
+                          style: const TextStyle(fontSize: 16)),
+                    ))
                         .toList(),
                   ),
                 ),
@@ -416,9 +435,7 @@ class _DsrEntryState extends State<DsrEntry> {
                         child: Row(
                           children: [
                             ElevatedButton(
-                              onPressed: () {
-                                // implement upload logic for row i
-                              },
+                              onPressed: () => _pickImage(i), // Call _pickImage with the index
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.blue,
@@ -434,6 +451,9 @@ class _DsrEntryState extends State<DsrEntry> {
                             ElevatedButton(
                               onPressed: () {
                                 // implement view logic for row i
+                                if (_selectedImages[i] != null) {
+                                  _showImageDialog(_selectedImages[i]!); //show image
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
@@ -587,6 +607,25 @@ class _DsrEntryState extends State<DsrEntry> {
           ),
         ),
       ],
+    );
+  }
+  void _showImageDialog(File imageFile) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8, // Adjust as needed
+            height: MediaQuery.of(context).size.height * 0.6,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.contain,
+                image: FileImage(imageFile),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
