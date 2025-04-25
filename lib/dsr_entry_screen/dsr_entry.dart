@@ -116,9 +116,12 @@ class _DsrEntryState extends State<DsrEntry> {
                 const SizedBox(height: 20),
 
                 // Process Type
-                const Text(
-                  'Process type',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                  child: const Text(
+                    'Process type',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Container(
@@ -126,8 +129,7 @@ class _DsrEntryState extends State<DsrEntry> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    border:
-                    Border.all(color: Colors.grey.shade400, width: 1),
+                    border: Border.all(color: Colors.grey.shade400, width: 1),
                     color: Colors.white,
                   ),
                   child: DropdownButton<String>(
@@ -140,11 +142,13 @@ class _DsrEntryState extends State<DsrEntry> {
                       }
                     },
                     items: _processdropdownItems
-                        .map((value) => DropdownMenuItem(
-                      value: value,
-                      child: Text(value,
-                          style: const TextStyle(fontSize: 16)),
-                    ))
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(value,
+                                style: const TextStyle(fontSize: 16)),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -152,9 +156,12 @@ class _DsrEntryState extends State<DsrEntry> {
                 const SizedBox(height: 20),
 
                 // Activity Type
-                const Text(
-                  'Activity Type',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                  child: const Text(
+                    'Activity Type',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Container(
@@ -162,8 +169,7 @@ class _DsrEntryState extends State<DsrEntry> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    border:
-                    Border.all(color: Colors.grey.shade400, width: 1),
+                    border: Border.all(color: Colors.grey.shade400, width: 1),
                     color: Colors.white,
                   ),
                   child: DropdownButton<String>(
@@ -186,10 +192,10 @@ class _DsrEntryState extends State<DsrEntry> {
                     },
                     items: _activityDropDownItems
                         .map((value) => DropdownMenuItem(
-                      value: value,
-                      child: Text(value,
-                          style: const TextStyle(fontSize: 16)),
-                    ))
+                              value: value,
+                              child: Text(value,
+                                  style: const TextStyle(fontSize: 16)),
+                            ))
                         .toList(),
                   ),
                 ),
@@ -197,9 +203,12 @@ class _DsrEntryState extends State<DsrEntry> {
                 const SizedBox(height: 20),
 
                 // Submission Date
-                const Text(
-                  'Submission Date',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                  child: const Text(
+                    'Submission Date',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -227,9 +236,12 @@ class _DsrEntryState extends State<DsrEntry> {
                 const SizedBox(height: 20),
 
                 // Report Date
-                const Text(
-                  'Report Date',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                  child: const Text(
+                    'Report Date',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -274,8 +286,7 @@ class _DsrEntryState extends State<DsrEntry> {
                 Column(
                   children: _uploadRows.map((i) {
                     return Padding(
-                      padding:
-                      const EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -288,8 +299,7 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.blue,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24, vertical: 12),
@@ -305,8 +315,7 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.green,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24, vertical: 12),
@@ -320,8 +329,7 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.yellow,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 12),
@@ -335,8 +343,7 @@ class _DsrEntryState extends State<DsrEntry> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.red,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 12),
@@ -349,6 +356,66 @@ class _DsrEntryState extends State<DsrEntry> {
                     );
                   }).toList(),
                 ),
+                SizedBox(height: 30,),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        // implement upload logic for row i
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                      ),
+                      child: MediaQuery(
+                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                          child: const Text('Submit & New')),
+                    ),
+                    SizedBox(height: 20,),
+                    ElevatedButton(
+                      onPressed: () {
+                        // implement upload logic for row i
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                      ),
+                      child: MediaQuery(
+                          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                          child: const Text('Submit & Exit')),
+                    ),
+                    SizedBox(height: 20,),
+                    ElevatedButton(
+                      onPressed: () {
+                        // implement upload logic for row i
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                      ),
+                      child: MediaQuery(
+                          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                          child: const Text('Click to see Submitted Data')),
+                    ),
+                    SizedBox(height: 20,),
+                  ],
+                )
               ],
             ),
           ),
@@ -365,8 +432,7 @@ class _DsrEntryState extends State<DsrEntry> {
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
           child: Text(
             label,
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
           ),
         ),
         const SizedBox(height: 10),
