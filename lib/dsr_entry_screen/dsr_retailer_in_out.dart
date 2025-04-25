@@ -273,9 +273,12 @@ class _DsrRetailerInOutState extends State<DsrRetailerInOut> {
     );
   }
 
-  Widget _buildLabel(String text) => Text(
-    text,
-    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+  Widget _buildLabel(String text) => MediaQuery(
+    data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+    ),
   );
 
   Widget _dropDownField({

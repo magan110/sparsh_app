@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
+import 'package:learning2/screens/Home_screen.dart';
 
 import 'dsr_retailer_in_out.dart';
 
@@ -89,6 +91,18 @@ class _DsrEntryState extends State<DsrEntry> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+            },
+            icon: Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
+          ),
           title: const Text(
             'DSR Entry',
             style: TextStyle(color: Colors.white, fontSize: 30),
@@ -133,6 +147,7 @@ class _DsrEntryState extends State<DsrEntry> {
                     color: Colors.white,
                   ),
                   child: DropdownButton<String>(
+                    dropdownColor: Colors.white,
                     isExpanded: true,
                     underline: Container(),
                     value: _processItem,
@@ -189,6 +204,14 @@ class _DsrEntryState extends State<DsrEntry> {
                           );
                         }
                       }
+                      // 🔹 Navigate on Phone Call with Builder/Stockist
+                      if (newValue == 'Phone Call with Builder/Stockist') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PhoneCallWithBuilder(),
+                          ),
+                        );
+                      }
                     },
                     items: _activityDropDownItems
                         .map((value) => DropdownMenuItem(
@@ -202,7 +225,7 @@ class _DsrEntryState extends State<DsrEntry> {
 
                 const SizedBox(height: 20),
 
-                // Submission Date
+                //! Submission Date
                 MediaQuery(
                   data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                   child: const Text(
@@ -235,7 +258,7 @@ class _DsrEntryState extends State<DsrEntry> {
 
                 const SizedBox(height: 20),
 
-                // Report Date
+                //! Report Date
                 MediaQuery(
                   data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                   child: const Text(
@@ -356,7 +379,11 @@ class _DsrEntryState extends State<DsrEntry> {
                     );
                   }).toList(),
                 ),
-                SizedBox(height: 30,),
+                SizedBox(
+                  height: 30,
+                ),
+
+                //! 3 submit button
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -374,10 +401,13 @@ class _DsrEntryState extends State<DsrEntry> {
                             horizontal: 24, vertical: 12),
                       ),
                       child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                          data: MediaQuery.of(context)
+                              .copyWith(textScaleFactor: 1.0),
                           child: const Text('Submit & New')),
                     ),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                     ElevatedButton(
                       onPressed: () {
                         // implement upload logic for row i
@@ -392,10 +422,13 @@ class _DsrEntryState extends State<DsrEntry> {
                             horizontal: 24, vertical: 12),
                       ),
                       child: MediaQuery(
-                          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                          data: MediaQuery.of(context)
+                              .copyWith(textScaleFactor: 1.0),
                           child: const Text('Submit & Exit')),
                     ),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                     ElevatedButton(
                       onPressed: () {
                         // implement upload logic for row i
@@ -410,10 +443,13 @@ class _DsrEntryState extends State<DsrEntry> {
                             horizontal: 24, vertical: 12),
                       ),
                       child: MediaQuery(
-                          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                          data: MediaQuery.of(context)
+                              .copyWith(textScaleFactor: 1.0),
                           child: const Text('Click to see Submitted Data')),
                     ),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                   ],
                 )
               ],
