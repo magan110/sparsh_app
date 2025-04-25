@@ -1,10 +1,9 @@
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'dart:io'; // Import for File
-//import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart'; // Ensure these imports are correct.  If these files are in the same directory, you do not need the  'dsr_entry_screen' path.
-//import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
-//import 'package:learning2/dsr_entry_screen/work_from_home.dart';
+// Ensure these imports are correct. If these files are in the same directory, you do not need the 'dsr_entry_screen' path.
 import 'Meeting_with_new_purchaser.dart'; //Corrected import paths.
 import 'Meetings_With_Contractor.dart';
 import 'any_other_activity.dart';
@@ -77,9 +76,10 @@ class _BtlActivitesState extends State<BtlActivites> {
   final TextEditingController _townController = TextEditingController();
   final TextEditingController _learningsController = TextEditingController();
 
-  final ImagePicker _picker = ImagePicker(); // Add this line
+  final ImagePicker _picker = ImagePicker(); // Initialize ImagePicker
   List<int> _uploadRows = [0];
-  List<File?> _imageFiles = [null]; // To store selected image files
+  List<File?> _selectedImages = [null]; // To hold selected image files
+
 
   @override
   void dispose() {
@@ -127,7 +127,7 @@ class _BtlActivitesState extends State<BtlActivites> {
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
-      _imageFiles.add(null); // Add null for the new row
+      _selectedImages.add(null); // Add null for the new row
     });
   }
 
@@ -135,51 +135,42 @@ class _BtlActivitesState extends State<BtlActivites> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
-      _imageFiles.removeLast();
+      _selectedImages.removeLast();
     });
   }
 
-  Future<void> _uploadImage(int index) async {
-    // Add this function
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  // Adapted image picking logic from AnyOtherActivity
+  Future<void> _pickImage(int index) async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
-    if (image != null) {
+    if (pickedFile != null) {
       setState(() {
-        _imageFiles[index] = File(image.path);
+        _selectedImages[index] = File(pickedFile.path);
       });
     } else {
       print('No image selected for row $index.');
     }
   }
 
-  // Function to display the image
-  void _viewImage(int index) {
-    if (_imageFiles[index] != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => Scaffold(
-            appBar: AppBar(title: const Text('Image Preview')),
-            body: Center(
-              child: Image.file(_imageFiles[index]!),
+  // Adapted image viewing logic from AnyOtherActivity
+  void _showImageDialog(File imageFile) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.contain,
+                image: FileImage(imageFile),
+              ),
             ),
           ),
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('No Image'),
-          content: const Text('Please upload an image first.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+        );
+      },
+    );
   }
 
   @override
@@ -208,6 +199,8 @@ class _BtlActivitesState extends State<BtlActivites> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
+          // Added Form key for validation if needed later
+          key: GlobalKey<FormState>(),
           child: ListView(
             children: [
               MediaQuery(
@@ -333,11 +326,12 @@ class _BtlActivitesState extends State<BtlActivites> {
 
                       // 🔹 Navigate on BTL Activities
                       if (newValue == 'BTL Activities') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const BtlActivites(),
-                          ),
-                        );
+                        // This is the current page, no navigation needed
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => const BtlActivites(),
+                        //   ),
+                        // );
                       }
 
                       // 🔹 Navigate on Internal Team Meetings / Review Meetings
@@ -449,7 +443,6 @@ class _BtlActivitesState extends State<BtlActivites> {
               const SizedBox(height: 10),
               TextFormField(
                 controller: _reportDateController,
-                // Use the new controller
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Select Date',
@@ -606,7 +599,7 @@ class _BtlActivitesState extends State<BtlActivites> {
                         children: [
                           ElevatedButton(
                             onPressed: () =>
-                                _uploadImage(i), // Call the _uploadImage function, added this.
+                                _pickImage(i), // Call the adapted _pickImage function
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -620,8 +613,19 @@ class _BtlActivitesState extends State<BtlActivites> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () =>
-                                _viewImage(i), // Pass the index
+                            onPressed: () {
+                              if (_selectedImages[i] != null) {
+                                _showImageDialog(
+                                    _selectedImages[i]!); // Call the adapted _showImageDialog
+                              } else {
+                                // Optionally show a message if no image is selected
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No image selected to view.')),
+                                );
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -677,7 +681,11 @@ class _BtlActivitesState extends State<BtlActivites> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement submit and new logic
+                      // Add form validation check here if needed
+                      // if (_formKey.currentState!.validate()) {
+                      //   print('Form is valid. Submit and New.');
+                      // }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -698,7 +706,11 @@ class _BtlActivitesState extends State<BtlActivites> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement submit and exit logic
+                      // Add form validation check here if needed
+                      // if (_formKey.currentState!.validate()) {
+                      //   print('Form is valid. Submit and Exit.');
+                      // }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -719,7 +731,8 @@ class _BtlActivitesState extends State<BtlActivites> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement view submitted data logic
+                      print('View Submitted Data button pressed');
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -746,5 +759,113 @@ class _BtlActivitesState extends State<BtlActivites> {
       ),
     );
   }
-}
 
+  //! Methods
+  Widget _buildTextField(String label) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextFormField(
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: label,
+            hintStyle: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          // Add validator if the field is required
+          // validator: (value) {
+          //   if (value == null || value.isEmpty) {
+          //     return 'Please enter $label';
+          //   }
+          //   return null;
+          // },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLabel(String text) => MediaQuery(
+    data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+    ),
+  );
+
+  Widget _searchableDropdownField({
+    required String selected,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) =>
+      DropdownSearch<String>(
+        items: items,
+        selectedItem: selected,
+        onChanged: onChanged,
+        popupProps: PopupProps.menu(
+          showSearchBox: true,
+          searchFieldProps: const TextFieldProps(
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              hintStyle: TextStyle(color: Colors.black),
+              fillColor: Colors.white,
+              filled: true,
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
+          itemBuilder: (context, item, isSelected) => Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(item, style: const TextStyle(color: Colors.black)),
+          ),
+        ),
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          dropdownSearchDecoration: InputDecoration(
+            hintText: 'Select',
+            filled: true,
+            fillColor: Colors.white,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade400),
+            ),
+          ),
+        ),
+      );
+
+  InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
+      InputDecoration(
+        hintText: hint,
+        contentPadding:
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        suffixIcon: suffix != null
+            ? IconButton(icon: Icon(suffix), onPressed: _pickDate)
+            : null,
+      );
+
+  Widget _iconButton(IconData icon, VoidCallback onPressed) => Container(
+    height: 50,
+    width: 50,
+    decoration: BoxDecoration(
+        color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+    child: IconButton(
+        icon: Icon(icon, color: Colors.white), onPressed: onPressed),
+  );
+}

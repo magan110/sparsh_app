@@ -58,6 +58,10 @@ class _OnLeaveState extends State<OnLeave> {
   List<int> _uploadRows = [0];
   List<File?> _imageFiles = [null]; // To store selected image files
 
+  // Image picker instance
+  final ImagePicker _picker = ImagePicker();
+
+
   @override
   void dispose() {
     _dateController.dispose();
@@ -183,6 +187,8 @@ class _OnLeaveState extends State<OnLeave> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
+          // Added Form key for validation if needed later
+          key: GlobalKey<FormState>(),
           child: ListView(
             children: [
               MediaQuery(
@@ -336,11 +342,12 @@ class _OnLeaveState extends State<OnLeave> {
 
                       // 🔹 Navigate on On Leave / Holiday / Off Day
                       if (newValue == 'On Leave / Holiday / Off Day') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const OnLeave(),
-                          ),
-                        );
+                        // This is the current page, no navigation needed
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => const OnLeave(),
+                        //   ),
+                        // );
                       }
 
                       // 🔹 Navigate on Work From Home
@@ -473,7 +480,18 @@ class _OnLeaveState extends State<OnLeave> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () => _viewImage(i), // Pass the index
+                            onPressed: () {
+                              if (_imageFiles[i] != null) {
+                                _viewImage(i); // Pass the index
+                              } else {
+                                // Optionally show a message if no image is selected
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No image selected to view.')),
+                                );
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -526,7 +544,7 @@ class _OnLeaveState extends State<OnLeave> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement upload logic for row i
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -626,4 +644,3 @@ class _OnLeaveState extends State<OnLeave> {
     );
   }
 }
-

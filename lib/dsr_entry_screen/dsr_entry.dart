@@ -68,6 +68,7 @@ class _DsrEntryState extends State<DsrEntry> {
   @override
   void dispose() {
     _dateController.dispose();
+    // Dispose of other controllers if they were added
     super.dispose();
   }
 
@@ -113,6 +114,27 @@ class _DsrEntryState extends State<DsrEntry> {
     } else {
       print('No image selected.'); // Important for debugging
     }
+  }
+
+  // Function to show the selected image in a dialog
+  void _showImageDialog(File imageFile) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8, // Adjust as needed
+            height: MediaQuery.of(context).size.height * 0.6,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.contain,
+                image: FileImage(imageFile),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -379,6 +401,8 @@ class _DsrEntryState extends State<DsrEntry> {
                 const SizedBox(height: 20),
 
                 //! Report Date
+                // Note: This Report Date field currently uses the same controller and pick function as Submission Date.
+                // If Report Date should be a separate date, you'll need a new controller and pick function.
                 MediaQuery(
                   data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                   child: const Text(
@@ -388,19 +412,19 @@ class _DsrEntryState extends State<DsrEntry> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
-                  controller: _dateController,
+                  controller: _dateController, // Using the same controller
                   readOnly: true,
                   decoration: InputDecoration(
                     hintText: 'Select Date',
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.calendar_today),
-                      onPressed: _pickDate,
+                      onPressed: _pickDate, // Calling the same pick function
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onTap: _pickDate,
+                  onTap: _pickDate, // Calling the same pick function
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please select a date';
@@ -453,6 +477,13 @@ class _DsrEntryState extends State<DsrEntry> {
                                 // implement view logic for row i
                                 if (_selectedImages[i] != null) {
                                   _showImageDialog(_selectedImages[i]!); //show image
+                                } else {
+                                  // Optionally show a message if no image is selected
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'No image selected to view.')),
+                                  );
                                 }
                               },
                               style: ElevatedButton.styleFrom(
@@ -510,7 +541,11 @@ class _DsrEntryState extends State<DsrEntry> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        // implement upload logic for row i
+                        // TODO: implement submit and new logic
+                        if (_formKey.currentState!.validate()) {
+                          print('Form is valid. Submit and New.');
+                          // Add your submission logic here
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -531,7 +566,11 @@ class _DsrEntryState extends State<DsrEntry> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // implement upload logic for row i
+                        // TODO: implement submit and exit logic
+                        if (_formKey.currentState!.validate()) {
+                          print('Form is valid. Submit and Exit.');
+                          // Add your submission logic here and then navigate back
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -552,7 +591,9 @@ class _DsrEntryState extends State<DsrEntry> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // implement upload logic for row i
+                        // TODO: implement view submitted data logic
+                        print('View Submitted Data button pressed');
+                        // Add logic to view submitted data
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -605,27 +646,15 @@ class _DsrEntryState extends State<DsrEntry> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
+          // Add validator if the field is required
+          // validator: (value) {
+          //   if (value == null || value.isEmpty) {
+          //     return 'Please enter $label';
+          //   }
+          //   return null;
+          // },
         ),
       ],
-    );
-  }
-  void _showImageDialog(File imageFile) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.8, // Adjust as needed
-            height: MediaQuery.of(context).size.height * 0.6,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.contain,
-                image: FileImage(imageFile),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

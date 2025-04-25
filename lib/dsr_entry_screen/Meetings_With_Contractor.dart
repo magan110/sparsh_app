@@ -197,6 +197,11 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
   @override
   void dispose() {
     _dateController.dispose();
+    // Dispose other controllers if they were added
+    _yourLatitudeController.dispose();
+    _yourLongitudeController.dispose();
+    _custLatitudeController.dispose();
+    _custLongitudeController.dispose();
     super.dispose();
   }
 
@@ -287,6 +292,24 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
       );
     }
   }
+
+  // Helper method to show a success dialog
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -418,11 +441,12 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
 
                       // 🔹 Navigate on Meetings With Contractor / Stockist
                       if (newValue == 'Meetings With Contractor / Stockist') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const MeetingsWithContractor(),
-                          ),
-                        );
+                        // This is the current page, no navigation needed
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => const MeetingsWithContractor(),
+                        //   ),
+                        // );
                       }
 
                       // 🔹 Navigate on Visit to Get / Check Sampling at Site
@@ -555,6 +579,8 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
               const SizedBox(height: 20),
 
               // ! Report Date
+              // Note: This Report Date field currently uses the same controller and pick function as Submission Date.
+              // If Report Date should be a separate date, you'll need a new controller and pick function.
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                 child: const Text(
@@ -564,19 +590,19 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
               ),
               const SizedBox(height: 10),
               TextFormField(
-                controller: _dateController,
+                controller: _dateController, // Using the same controller
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Select Date',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.calendar_today),
-                    onPressed: _pickDate,
+                    onPressed: _pickDate, // Calling the same pick function
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onTap: _pickDate,
+                onTap: _pickDate, // Calling the same pick function
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please select a date';
@@ -590,22 +616,32 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
               _buildLabel('Area code *:'),
               const SizedBox(height: 8),
               _searchableDropdownField(
-                selected: _areaCode,
-                items: _majorCitiesInIndia,
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _areaCode = val;
-                      // Set latitude and longitude based on the selected area code
-                      if (_cityCoordinates.containsKey(val)) {
-                        _custLatitudeController.text =
-                            _cityCoordinates[val]!['latitude']!.toString();
-                        _custLongitudeController.text =
-                            _cityCoordinates[val]!['longitude']!.toString();
-                      }
-                    });
+                  selected: _areaCode,
+                  items: _majorCitiesInIndia,
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _areaCode = val;
+                        // Set latitude and longitude based on the selected area code
+                        if (_cityCoordinates.containsKey(val)) {
+                          _custLatitudeController.text =
+                              _cityCoordinates[val]!['latitude']!.toString();
+                          _custLongitudeController.text =
+                              _cityCoordinates[val]!['longitude']!.toString();
+                        } else {
+                          // Clear coordinates if city not found in map
+                          _custLatitudeController.clear();
+                          _custLongitudeController.clear();
+                        }
+                      });
+                    }
+                  },
+                  validator: (value) { // Add validator for the searchable dropdown
+                    if (value == null || value == 'Select') {
+                      return 'Please select an Area Code';
+                    }
+                    return null;
                   }
-                },
               ),
 
               // ! Purchaser
@@ -657,9 +693,9 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: TextFormField( // Use TextFormField for validation
                       decoration: _inputDecoration('Purchaser code'),
-                      validator: (value) {
+                      validator: (value) { // Add validator for the code field
                         if (value == null || value.isEmpty) {
                           return 'Please enter purchaser code';
                         }
@@ -671,7 +707,8 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                   _iconButton(
                     Icons.search,
                         () {
-                      // TODO: perform code search
+                      // TODO: perform code search logic here
+                      print('Search button pressed'); // Placeholder print
                     },
                   ),
                 ],
@@ -679,51 +716,19 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
 
               //! New Orders Received
               const SizedBox(height: 20),
-              TextFormField(
-                decoration: _inputDecoration('New Orders Received'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter new orders received';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField('New Orders Received'), // Using the helper method
 
               //! Ugai Recovery Plans
               const SizedBox(height: 20),
-              TextFormField(
-                decoration: _inputDecoration('Ugai Recovery Plans'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter ugai recovery plans';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField('Ugai Recovery Plans'), // Using the helper method
 
               //! Any Purchaser Grievances
               const SizedBox(height: 20),
-              TextFormField(
-                decoration: _inputDecoration('Any Purchaser Grievances'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter purchaser grievances';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField('Any Purchaser Grievances'), // Using the helper method
 
               //! Any Other Points
               const SizedBox(height: 20),
-              TextFormField(
-                decoration: _inputDecoration('Any Other Points'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter any other points';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField('Any Other Points'), // Using the helper method
 
               //! Image Upload , view Image , + , -
               Column(
@@ -749,7 +754,18 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () => _viewImage(i), // Pass the index
+                            onPressed: () {
+                              if (_imageFiles[i] != null) {
+                                _viewImage(i); // Pass the index
+                              } else {
+                                // Optionally show a message if no image is selected
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No image selected to view.')),
+                                );
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -806,7 +822,8 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                       if (_formKey.currentState!.validate()) {
                         // TODO:  Submit data and add new entry.
                         print('Form is valid. Submitting...');
-                        _showSuccessDialog("Datasubmitted successfully!");
+                        _showSuccessDialog("Data submitted successfully!");
+                        // Add logic to clear form fields for new entry
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -830,6 +847,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                         // TODO: Submit data and exit.
                         print('Form is valid. Submitting and exiting...');
                         _showSuccessDialog("Data submitted and exited!");
+                        // Add logic to navigate back
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -849,7 +867,9 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement view submitted data logic
+                      print('View Submitted Data button pressed');
+                      // Add logic to view submitted data
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -877,6 +897,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
   }
 
   //! Methods
+  // Helper method for building text form fields with validation
   Widget _buildTextField(String label) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -920,15 +941,14 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
     ),
   );
 
+  // Helper method for building searchable dropdown fields with validation
   Widget _searchableDropdownField({
     required String selected,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    String? Function(String?)? validator, // Added validator parameter
   }) =>
       DropdownSearch<String>(
-        items: items,
-        selectedItem: selected,
-        onChanged: onChanged,
         popupProps: PopupProps.menu(
           showSearchBox: true,
           searchFieldProps: const TextFieldProps(
@@ -949,6 +969,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
             child: Text(item, style: const TextStyle(color: Colors.black)),
           ),
         ),
+        items: items,
         dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
             hintText: 'Select',
@@ -962,14 +983,13 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
             ),
           ),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please select an option';
-          }
-          return null;
-        },
+        onChanged: onChanged,
+        selectedItem: selected,
+        validator: validator, // Assign the validator
       );
 
+
+  // Helper method for building input decorations
   InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
       InputDecoration(
         hintText: hint,
@@ -981,6 +1001,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
             : null,
       );
 
+  // Helper method for building icon buttons
   Widget _iconButton(IconData icon, VoidCallback onPressed) => Container(
     height: 50,
     width: 50,
@@ -989,20 +1010,4 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
     child: IconButton(
         icon: Icon(icon, color: Colors.white), onPressed: onPressed),
   );
-
-  void _showSuccessDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Success'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }

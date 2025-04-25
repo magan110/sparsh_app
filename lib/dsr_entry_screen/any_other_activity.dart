@@ -56,14 +56,21 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
   DateTime? _selectedReportDate; // Added state variable for Report Date
 
   List<int> _uploadRows = [0];
-  final ImagePicker _picker =
-  ImagePicker(); // Initialize ImagePicker, corrected initialization
-  List<File?> _imageFiles = [null]; // To store selected image files
+  final ImagePicker _picker = ImagePicker(); // Initialize ImagePicker
+  List<File?> _selectedImages = [null]; // To hold selected images for each row
+
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _reportDateController.dispose();
+    super.dispose();
+  }
 
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
-      _imageFiles.add(null); // Add null for the new row
+      _selectedImages.add(null); // Add null for the new row
     });
   }
 
@@ -71,7 +78,7 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
     if (_uploadRows.length <= 1) return;
     setState(() {
       _uploadRows.removeLast();
-      _imageFiles.removeLast();
+      _selectedImages.removeLast();
     });
   }
 
@@ -107,55 +114,40 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
     }
   }
 
-  Future<void> _uploadImage(int index) async {
-    // corrected function
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  // Adapted image picking logic from PhoneCallWithBuilder
+  Future<void> _pickImage(int index) async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
-    if (image != null) {
+    if (pickedFile != null) {
       setState(() {
-        _imageFiles[index] = File(image.path);
+        _selectedImages[index] = File(pickedFile.path);
       });
     } else {
       print('No image selected for row $index.');
     }
   }
 
-  // Function to display the image
-  void _viewImage(int index) {
-    if (_imageFiles[index] != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => Scaffold(
-            appBar: AppBar(title: const Text('Image Preview')),
-            body: Center(
-              child: Image.file(_imageFiles[index]!),
+  // Adapted image viewing logic from PhoneCallWithBuilder
+  void _showImageDialog(File imageFile) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.contain,
+                image: FileImage(imageFile),
+              ),
             ),
           ),
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('No Image'),
-          content: const Text('Please upload an image first.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+        );
+      },
+    );
   }
 
-  @override
-  void dispose() {
-    _dateController.dispose();
-    _reportDateController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +175,8 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
+          // Added Form key for validation if needed later
+          key: GlobalKey<FormState>(),
           child: ListView(
             children: [
               MediaQuery(
@@ -353,11 +347,12 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
 
                       // 🔹 Navigate on Any Other Activity
                       if (newValue == 'Any Other Activity') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const AnyOtherActivity(),
-                          ),
-                        );
+                        // This is the current page, no navigation needed
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => const AnyOtherActivity(),
+                        //   ),
+                        // );
                       }
 
                       // 🔹 Navigate on Phone call with Unregistered Purchasers
@@ -423,20 +418,18 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
               const SizedBox(height: 10),
               TextFormField(
                 controller: _reportDateController,
-                // Use the new controller
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Select Date',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.calendar_today),
-                    onPressed:
-                    _pickReportDate, // Use the new function, corrected it.
+                    onPressed: _pickReportDate,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onTap: _pickReportDate, // Use the new function
+                onTap: _pickReportDate,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please select a date';
@@ -472,7 +465,7 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                         children: [
                           ElevatedButton(
                             onPressed: () =>
-                                _uploadImage(i), // Call the _uploadImage function, corrected it.
+                                _pickImage(i), // Call the adapted _pickImage function
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blue,
@@ -486,8 +479,19 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () =>
-                                _viewImage(i), // Pass the index
+                            onPressed: () {
+                              if (_selectedImages[i] != null) {
+                                _showImageDialog(
+                                    _selectedImages[i]!); // Call the adapted _showImageDialog
+                              } else {
+                                // Optionally show a message if no image is selected
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No image selected to view.')),
+                                );
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -543,7 +547,11 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement submit and new logic
+                      // Add form validation check here if needed
+                      // if (_formKey.currentState!.validate()) {
+                      //   print('Form is valid. Submit and New.');
+                      // }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -564,7 +572,11 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement submit and exit logic
+                      // Add form validation check here if needed
+                      // if (_formKey.currentState!.validate()) {
+                      //   print('Form is valid. Submit and Exit.');
+                      // }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -585,7 +597,8 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement view submitted data logic
+                      print('View Submitted Data button pressed');
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -639,6 +652,13 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
+          // Add validator if the field is required
+          // validator: (value) {
+          //   if (value == null || value.isEmpty) {
+          //     return 'Please enter $label';
+          //   }
+          //   return null;
+          // },
         ),
       ],
     );
@@ -716,4 +736,3 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
         icon: Icon(icon, color: Colors.white), onPressed: onPressed),
   );
 }
-

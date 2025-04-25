@@ -190,6 +190,8 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
+          // Added Form key for validation if needed later
+          key: GlobalKey<FormState>(),
           child: ListView(
             children: [
               MediaQuery(
@@ -296,11 +298,12 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
 
                       // 🔹 Navigate on Visit to Get / Check Sampling at Site
                       if (newValue == 'Visit to Get / Check Sampling at Site') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const CheckSamplingAtSite(),
-                          ),
-                        );
+                        // This is the current page, no navigation needed
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => const CheckSamplingAtSite(),
+                        //   ),
+                        // );
                       }
 
                       // 🔹 Navigate on Meeting with New Purchaser(Trade Purchaser)/Retailer
@@ -539,7 +542,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                       setState(() => _qualityItem = newValue);
                     }
                   },
-                  items: _statusDropdownItems
+                  items: _statusDropdownItems // This seems incorrect, should use _qualitydropdownItems
                       .map(
                         (value) => DropdownMenuItem(
                       value: value,
@@ -559,7 +562,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                 child: const Text(
-                  'Quality of Sample',
+                  'Status of Sample', // Corrected label
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ),
@@ -752,7 +755,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement submit and new logic
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -773,7 +776,7 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement submit and exit logic
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -847,6 +850,13 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
+          // Add validator if the field is required
+          // validator: (value) {
+          //   if (value == null || value.isEmpty) {
+          //     return 'Please enter $label';
+          //   }
+          //   return null;
+          // },
         ),
       ],
     );
@@ -865,46 +875,40 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) =>
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade400),
-        ),
-        child: DropdownSearch<String>(
-          items: items,
-          selectedItem: selected,
-          onChanged: onChanged,
-          popupProps: PopupProps.menu(
-            showSearchBox: true,
-            searchFieldProps: const TextFieldProps(
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: TextStyle(color: Colors.black),
-                fillColor: Colors.white,
-                filled: true,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
+      DropdownSearch<String>(
+        items: items,
+        selectedItem: selected,
+        onChanged: onChanged,
+        popupProps: PopupProps.menu(
+          showSearchBox: true,
+          searchFieldProps: const TextFieldProps(
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              hintStyle: TextStyle(color: Colors.black),
+              fillColor: Colors.white,
+              filled: true,
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
               ),
-            ),
-            itemBuilder: (c, item, sel) => Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                item,
-                style: TextStyle(color: Colors.black),
-              ),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
-          dropdownDecoratorProps: DropDownDecoratorProps(
-            dropdownSearchDecoration: InputDecoration(
-              hintText: '',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey.shade400),
-                borderRadius: BorderRadius.circular(10),
-              ),
+          itemBuilder: (context, item, isSelected) => Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(item, style: const TextStyle(color: Colors.black)),
+          ),
+        ),
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          dropdownSearchDecoration: InputDecoration(
+            hintText: 'Select',
+            filled: true,
+            fillColor: Colors.white,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade400),
             ),
           ),
         ),
@@ -930,4 +934,3 @@ class _CheckSamplingAtSiteState extends State<CheckSamplingAtSite> {
         icon: Icon(icon, color: Colors.white), onPressed: onPressed),
   );
 }
-

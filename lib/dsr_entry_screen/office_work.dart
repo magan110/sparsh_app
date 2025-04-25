@@ -58,6 +58,10 @@ class _OfficeWorkState extends State<OfficeWork> {
   List<int> _uploadRows = [0];
   List<File?> _imageFiles = [null]; // To store selected image files
 
+  // Image picker instance
+  final ImagePicker _picker = ImagePicker();
+
+
   @override
   void dispose() {
     _dateController.dispose();
@@ -182,6 +186,8 @@ class _OfficeWorkState extends State<OfficeWork> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
+          // Added Form key for validation if needed later
+          key: GlobalKey<FormState>(),
           child: ListView(
             children: [
               MediaQuery(
@@ -326,11 +332,12 @@ class _OfficeWorkState extends State<OfficeWork> {
 
                       // 🔹 Navigate on Office Work
                       if (newValue == 'Office Work') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const OfficeWork(),
-                          ),
-                        );
+                        // This is the current page, no navigation needed
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => const OfficeWork(),
+                        //   ),
+                        // );
                       }
 
                       // 🔹 Navigate on On Leave / Holiday / Off Day
@@ -476,7 +483,18 @@ class _OfficeWorkState extends State<OfficeWork> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () => _viewImage(i), // Pass the index
+                            onPressed: () {
+                              if (_imageFiles[i] != null) {
+                                _viewImage(i); // Pass the index
+                              } else {
+                                // Optionally show a message if no image is selected
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No image selected to view.')),
+                                );
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.green,
@@ -529,7 +547,7 @@ class _OfficeWorkState extends State<OfficeWork> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      // implement upload logic for row i
+                      // TODO: implement upload logic for row i
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -629,4 +647,3 @@ class _OfficeWorkState extends State<OfficeWork> {
     );
   }
 }
-
