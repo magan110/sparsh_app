@@ -1,9 +1,8 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/work_from_home.dart';
-
 import 'Meeting_with_new_purchaser.dart';
 import 'Meetings_With_Contractor.dart';
 import 'any_other_activity.dart';
@@ -15,15 +14,14 @@ import 'internal_team_meeting.dart';
 import 'office_work.dart';
 import 'on_leave.dart';
 
-class PhoneCallWithBuilder extends StatefulWidget {
-  const PhoneCallWithBuilder({super.key});
+class OnLeave extends StatefulWidget {
+  const OnLeave({super.key});
 
   @override
-  State<PhoneCallWithBuilder> createState() => _PhoneCallWithBuilderState();
+  State<OnLeave> createState() => _OnLeaveState();
 }
-final _formKey = GlobalKey<FormState>();
 
-class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
+class _OnLeaveState extends State<OnLeave> {
 
   String? _processItem = 'Select';
   final List<String> _processdropdownItems = [
@@ -32,21 +30,7 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
     'Update',
   ];
 
-  String? _purchaserItem = 'Select';
-  final List<String> _purchaserdropdownItems = [
-    'Select',
-    'Purchaser(Non Trade)',
-    'AUTHORISED DEALER',
-  ];
-
-  String? _metWthItem = 'Select';
-  final List<String> _metWithdropdownItems = [
-    'Select',
-    'Builder',
-    'Contractor',
-  ];
-
-  String? _activityItem = 'Phone Call with Builder/Stockist';
+  String? _activityItem = 'On Leave / Holiday / Off Day';
   final List<String> _activityDropDownItems = [
     'Select',
     'Personal Visit',
@@ -63,51 +47,15 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
     'Phone call with Unregistered Purchasers',
   ];
 
-  String _areaCode = 'Select';
-  final List<String> _majorCitiesInIndia = [
-    'Select',
-    'Agra', 'Ahmedabad', 'Ajmer', 'Akola', 'Aligarh',
-    'Allahabad', 'Alwar', 'Ambala', 'Amravati', 'Amritsar',
-    'Anand', 'Anantapur', 'Aurangabad', 'Asansol', 'Bareilly',
-    'Bengaluru', 'Belgaum', 'Bhagalpur', 'Bhavnagar', 'Bhilai',
-    'Bhiwandi', 'Bhopal', 'Bhubaneswar', 'Bikaner', 'Bilaspur',
-    'Bokaro Steel City', 'Chandigarh', 'Chennai', 'Coimbatore', 'Cuttack',
-    'Dehradun', 'Delhi', 'Dhanbad', 'Durgapur', 'Erode',
-    'Faridabad', 'Firozabad', 'Gandhinagar', 'Ghaziabad', 'Gorakhpur',
-    'Guntur', 'Gurgaon', 'Guwahati', 'Gwalior', 'Haldwani',
-    'Haridwar', 'Hubli-Dharwad', 'Hyderabad', 'Imphal', 'Indore',
-    'Itanagar', 'Jabalpur', 'Jaipur', 'Jalandhar', 'Jammu',
-    'Jamshedpur', 'Jhansi', 'Jodhpur', 'Junagadh', 'Kakinada',
-    'Kalyan-Dombivli', 'Kanpur', 'Kochi', 'Kolhapur', 'Kolkata',
-    'Kollam', 'Kota', 'Kozhikode', 'Kurnool', 'Lucknow',
-    'Ludhiana', 'Madurai', 'Malappuram', 'Mangalore', 'Meerut',
-    'Mira-Bhayandar', 'Moradabad', 'Mumbai', 'Mysuru', 'Nagpur',
-    'Nanded', 'Nashik', 'Navi Mumbai', 'Nellore', 'Noida',
-    'Patna', 'Pimpri-Chinchwad', 'Prayagraj', 'Pune', 'Raipur',
-    'Rajkot', 'Rajahmundry', 'Ranchi', 'Rohtak', 'Rourkela',
-    'Saharanpur', 'Salem', 'Sangli-Miraj & Kupwad', 'Shillong', 'Shimla',
-    'Siliguri', 'Solapur', 'Srinagar', 'Surat', 'Thane',
-    'Thiruvananthapuram', 'Thrissur', 'Tiruchirappalli', 'Tirunelveli', 'Tiruppur',
-    'Udaipur', 'Ujjain', 'Ulhasnagar', 'Vadodara', 'Varanasi',
-    'Vasai-Virar', 'Vijayawada', 'Visakhapatnam', 'Warangal', 'Yamunanagar',
-  ];
-
-  // City coordinates mapping
-  final Map<String, Map<String, double>> _cityCoordinates = {
-    'Agra': {'latitude': 27.1767, 'longitude': 78.0081},
-    'Ahmedabad': {'latitude': 23.0225, 'longitude': 72.5714},
-    'Ajmer': {'latitude': 26.4499, 'longitude': 74.6399},
-    'Akola': {'latitude': 20.7063, 'longitude': 77.0202},
-    'Aligarh': {'latitude': 27.8974, 'longitude': 78.0880},
-    // Add more cities here as required
-  };
-
   final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _reportDateController = TextEditingController(); // Added controller for Report Date
   DateTime? _selectedDate;
+  DateTime? _selectedReportDate; // Added state variable for Report Date
 
   @override
   void dispose() {
     _dateController.dispose();
+    _reportDateController.dispose(); // Dispose the new controller
     super.dispose();
   }
 
@@ -127,7 +75,24 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
     }
   }
 
+  Future<void> _pickReportDate() async { // Function to pick report date
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedReportDate ?? now,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(now.year + 5),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedReportDate = picked;
+        _reportDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
   List<int> _uploadRows = [0];
+
   void _addRow() {
     setState(() {
       _uploadRows.add(_uploadRows.length);
@@ -140,15 +105,6 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
       _uploadRows.removeLast();
     });
   }
-
-  // Location controllers
-  final TextEditingController _yourLatitudeController = TextEditingController();
-  final TextEditingController _yourLongitudeController = TextEditingController();
-  final TextEditingController _custLatitudeController = TextEditingController();
-  final TextEditingController _custLongitudeController = TextEditingController();
-
-  // Form key
-  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -171,9 +127,8 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
         backgroundColor: Colors.blue,
       ),
       body: Padding(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Form(
-          key: _formKey,
           child: ListView(
             children: [
               MediaQuery(
@@ -188,7 +143,6 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                 ),
               ),
               const SizedBox(height: 20),
-
               //! Process Type
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -228,7 +182,6 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                 ),
               ),
               const SizedBox(height: 20),
-
               // ! Activity type
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -254,17 +207,13 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                     if (newValue != null) {
                       setState(() => _activityItem = newValue);
 
-                      if (newValue != null) {
-                        setState(() => _activityItem = newValue);
-
-                        // 🔹 Navigate on Personal Visit
-                        if (newValue == 'Personal Visit') {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const DsrRetailerInOut(),
-                            ),
-                          );
-                        }
+                      // 🔹 Navigate on Personal Visit
+                      if (newValue == 'Personal Visit') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const DsrRetailerInOut(),
+                          ),
+                        );
                       }
                       // 🔹 Navigate on Phone Call with Builder/Stockist
                       if (newValue == 'Phone Call with Builder/Stockist') {
@@ -294,7 +243,8 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                       }
 
                       // 🔹 Navigate on Meeting with New Purchaser(Trade Purchaser)/Retailer
-                      if (newValue == 'Meeting with New Purchaser(Trade Purchaser)/Retailer') {
+                      if (newValue ==
+                          'Meeting with New Purchaser(Trade Purchaser)/Retailer') {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const MeetingWithNewPurchaser(),
@@ -360,7 +310,8 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                       if (newValue == 'Phone call with Unregistered Purchasers') {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const PhoneCallWithUnregisterdPurchaser(),
+                            builder: (_) =>
+                            const PhoneCallWithUnregisterdPurchaser(),
                           ),
                         );
                       }
@@ -375,9 +326,7 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                       .toList(),
                 ),
               ),
-
               const SizedBox(height: 20),
-
               // ! Submission Date
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -408,9 +357,7 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                   return null;
                 },
               ),
-
               const SizedBox(height: 20),
-
               // ! Report Date
               MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -421,19 +368,19 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
               ),
               const SizedBox(height: 10),
               TextFormField(
-                controller: _dateController,
+                controller: _reportDateController, // Use the new controller
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Select Date',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.calendar_today),
-                    onPressed: _pickDate,
+                    onPressed: _pickReportDate, // Use the new function
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onTap: _pickDate,
+                onTap: _pickReportDate, // Use the new function
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please select a date';
@@ -442,156 +389,11 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
                 },
               ),
 
-              // ! Area Code
-              const SizedBox(height: 16),
-              _buildLabel('Area code *:'),
-              const SizedBox(height: 8),
-              _searchableDropdownField(
-                selected: _areaCode,
-                items: _majorCitiesInIndia,
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _areaCode = val;
-                      // Set latitude and longitude based on the selected area code
-                      if (_cityCoordinates.containsKey(val)) {
-                        _custLatitudeController.text = _cityCoordinates[val]!['latitude']!.toString();
-                        _custLongitudeController.text = _cityCoordinates[val]!['longitude']!.toString();
-                      }
-                    });
-                  }
-                },
-              ),
-
-              // ! Purchaser
-              SizedBox(height: 20,),
-              MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                child: const Text(
-                  'Purchaser',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade400, width: 1),
-                  color: Colors.white,
-                ),
-                child: DropdownButton<String>(
-                  dropdownColor: Colors.white,
-                  isExpanded: true,
-                  underline: Container(),
-                  value: _purchaserItem,
-                  onChanged: (newValue) {
-                    if (newValue != null) {
-                      setState(() => _purchaserItem = newValue);
-                    }
-                  },
-                  items: _purchaserdropdownItems
-                      .map(
-                        (value) => DropdownMenuItem(
-                      value: value,
-                      child: Text(value,
-                          style: const TextStyle(fontSize: 16)),
-                    ),
-                  )
-                      .toList(),
-                ),
-              ),
+              //!Remarks
               const SizedBox(height: 20),
+              _buildTextField('Remarks'),
 
-
-              // ! Code with search icon
-              _buildLabel('Code *:'),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: _inputDecoration('Purchaser code'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _iconButton(Icons.search, () {
-                    // TODO: perform code search
-                  }),
-                ],
-              ),
-
-              // ! Site Name
-              const SizedBox(height: 20),
-              _buildTextField('Site Name'),
-
-              //! Contractor Working at Site
-              const SizedBox(height: 20),
-              _buildTextField('Contractor Working at Site'),
-
-              //! Met With
-              SizedBox(height: 20,),
-              MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                child: const Text(
-                  'Met With',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade400, width: 1),
-                  color: Colors.white,
-                ),
-                child: DropdownButton<String>(
-                  dropdownColor: Colors.white,
-                  isExpanded: true,
-                  underline: Container(),
-                  value: _metWthItem,
-                  onChanged: (newValue) {
-                    if (newValue != null) {
-                      setState(() => _metWthItem = newValue);
-                    }
-                  },
-                  items: _metWithdropdownItems
-                      .map(
-                        (value) => DropdownMenuItem(
-                      value: value,
-                      child: Text(value,
-                          style: const TextStyle(fontSize: 16)),
-                    ),
-                  )
-                      .toList(),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              //! Name and Designation of Person
-              const SizedBox(height: 20),
-              _buildTextField('Name and Designation of Person'),
-
-              //! Topic Discussed
-              const SizedBox(height: 20),
-              _buildTextField('Topic Discussed'),
-
-              //! Ugai Recovery Plans
-              const SizedBox(height: 20),
-              _buildTextField('Ugai Recovery Plans'),
-
-              //! Any Purchaser Grievances
-              const SizedBox(height: 20),
-              _buildTextField('Any Purchaser Grievances'),
-
-              //! Any other Point
-              const SizedBox(height: 20),
-              _buildTextField('Any other Point'),
-
-              //! Image Upload , View Image , + , -
+              //! image view + -
               Column(
                 children: _uploadRows.map((i) {
                   return Padding(
@@ -761,70 +563,4 @@ class _PhoneCallWithBuilderState extends State<PhoneCallWithBuilder> {
       ],
     );
   }
-  Widget _buildLabel(String text) => MediaQuery(
-    data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-    child: Text(
-      text,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-    ),
-  );
-  Widget _searchableDropdownField({
-    required String selected,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) =>
-      DropdownSearch<String>(
-        items: items,
-        selectedItem: selected,
-        onChanged: onChanged,
-        popupProps: PopupProps.menu(
-          showSearchBox: true,
-          searchFieldProps: const TextFieldProps(
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              hintStyle: TextStyle(color: Colors.black),
-              fillColor: Colors.white,
-              filled: true,
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            ),
-          ),
-          itemBuilder: (context, item, isSelected) => Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text(item, style: const TextStyle(color: Colors.black)),
-          ),
-        ),
-        dropdownDecoratorProps: DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
-            hintText: 'Select',
-            filled: true,
-            fillColor: Colors.white,
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey.shade400),
-            ),
-          ),
-        ),
-      );
-
-
-  InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
-      InputDecoration(
-        hintText: hint,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        suffixIcon: suffix != null ? IconButton(icon: Icon(suffix), onPressed: _pickDate) : null,
-      );
-
-  Widget _iconButton(IconData icon, VoidCallback onPressed) => Container(
-    height: 50,
-    width: 50,
-    decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
-    child: IconButton(icon: Icon(icon, color: Colors.white), onPressed: onPressed),
-  );
 }

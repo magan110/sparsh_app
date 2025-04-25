@@ -2,9 +2,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:learning2/dsr_entry_screen/Meeting_with_new_purchaser.dart';
+import 'package:learning2/dsr_entry_screen/any_other_activity.dart';
+import 'package:learning2/dsr_entry_screen/btl_activites.dart';
+import 'package:learning2/dsr_entry_screen/check_sampling_at_site.dart';
+import 'package:learning2/dsr_entry_screen/internal_team_meeting.dart';
+import 'package:learning2/dsr_entry_screen/office_work.dart';
+import 'package:learning2/dsr_entry_screen/on_leave.dart';
 import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
+import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
+import 'package:learning2/dsr_entry_screen/work_from_home.dart';
 import 'package:learning2/screens/Home_screen.dart';
 
+import 'Meetings_With_Contractor.dart';
 import 'dsr_retailer_in_out.dart';
 
 class DsrEntry extends StatefulWidget {
@@ -29,6 +39,7 @@ class _DsrEntryState extends State<DsrEntry> {
     'Select',
     'Personal Visit',
     'Phone Call with Builder/Stockist',
+    'Meetings With Contractor / Stockist',
     'Visit to Get / Check Sampling at Site',
     'Meeting with New Purchaser(Trade Purchaser)/Retailer',
     'BTL Activities',
@@ -209,6 +220,96 @@ class _DsrEntryState extends State<DsrEntry> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const PhoneCallWithBuilder(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Meetings With Contractor / Stockist
+                      if (newValue == 'Meetings With Contractor / Stockist') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const MeetingsWithContractor(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Visit to Get / Check Sampling at Site
+                      if (newValue == 'Visit to Get / Check Sampling at Site') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const CheckSamplingAtSite(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Meeting with New Purchaser(Trade Purchaser)/Retailer
+                      if (newValue == 'Meeting with New Purchaser(Trade Purchaser)/Retailer') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const MeetingWithNewPurchaser(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on BTL Activities
+                      if (newValue == 'BTL Activities') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const BtlActivites(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Internal Team Meetings / Review Meetings
+                      if (newValue == 'Internal Team Meetings / Review Meetings') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const InternalTeamMeeting(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Office Work
+                      if (newValue == 'Office Work') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const OfficeWork(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on On Leave / Holiday / Off Day
+                      if (newValue == 'On Leave / Holiday / Off Day') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const OnLeave(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Work From Home
+                      if (newValue == 'Work From Home') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const WorkFromHome(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Any Other Activity
+                      if (newValue == 'Any Other Activity') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AnyOtherActivity(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Phone call with Unregistered Purchasers
+                      if (newValue == 'Phone call with Unregistered Purchasers') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PhoneCallWithUnregisterdPurchaser(),
                           ),
                         );
                       }

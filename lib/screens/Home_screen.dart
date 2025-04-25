@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const HomeContent(), // The main content for the home tab
     const TasksScreen(), // Placeholder for Tasks Screen
-    const MailScreen(),   // Placeholder for Mail Screen
+    const MailScreen(), // Placeholder for Mail Screen
     const ProfileScreen(), // Placeholder for Profile Screen
   ];
 
@@ -33,7 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         appBar: _buildAppBar(), // Custom AppBar
         drawer: _buildDrawer(), // Custom Navigation Drawer
-        body: IndexedStack( // Use IndexedStack to preserve state of screens
+        body: IndexedStack(
+          // Use IndexedStack to preserve state of screens
           index: _selectedIndex,
           children: _screens,
         ),
@@ -47,13 +48,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       // Removed backgroundColor, using a gradient instead
       elevation: 2, // Subtle shadow
-      flexibleSpace: Container( // Added flexibleSpace
+      flexibleSpace: Container(
+        // Added flexibleSpace
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: <Color>[
-              Color(0xFF42a5f5),       // Top color
+              Color(0xFF42a5f5), // Top color
               Color(0xFFb3e5fc), // Bottom color
             ],
           ),
@@ -67,17 +69,19 @@ class _HomeScreenState extends State<HomeScreen> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      iconTheme: const IconThemeData(color: Colors.white), // Drawer icon color, changed to white
+      iconTheme:
+      const IconThemeData(color: Colors.white), // Drawer icon color, changed to white
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none, size: 30, color: Colors.white), //changed to white
+          icon: const Icon(Icons.notifications_none,
+              size: 30, color: Colors.white), //changed to white
           onPressed: () {
             // TODO: Implement notification action
             print('Notifications tapped');
           },
         ),
         IconButton(
-          icon: const Icon(Icons.search, size: 30, color: Colors.white), //changed to white
+          icon: const Icon(Icons.search, size: 30, color: Colors.white),
           onPressed: () {
             // TODO: Implement search action
             print('Search tapped');
@@ -108,7 +112,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 80,
                   errorBuilder: (context, error, stackTrace) {
                     print('Error loading drawer header image: $error');
-                    return const Icon(Icons.business, size: 80, color: Colors.white); // Placeholder icon
+                    return const Icon(Icons.business,
+                        size: 80, color: Colors.white); // Placeholder icon
                   },
                 ),
                 const SizedBox(height: 8),
@@ -141,7 +146,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListTile(
       leading: Icon(icon, color: Colors.blueGrey),
       title: Text(title, style: const TextStyle(fontSize: 16)),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      trailing:
+      const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
       onTap: () {
         // TODO: Implement navigation logic for each drawer item
         print('$title tapped');
@@ -177,7 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0), // Adjust padding
+      padding:
+      const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0), // Adjust padding
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(bottomNavItems.length, (index) {
@@ -206,7 +213,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(
                     item['icon'],
                     size: isSelected ? 30 : 28, // Adjust size difference
-                    color: isSelected ? Colors.blue : Colors.grey[600], // Use theme/specific colors
+                    color: isSelected
+                        ? Colors.blue
+                        : Colors.grey[600], // Use theme/specific colors
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -268,27 +277,33 @@ class _HomeContentState extends State<HomeContent> {
     });
   }
 
+  int _currentIndex = 0;
+
   void _startAutoScroll() {
-    _autoScrollTimer?.cancel(); // Cancel existing timer if any
+    _autoScrollTimer?.cancel(); // Cancel existing timer
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      // Increase duration slightly
       if (!_scrollController.hasClients) {
-        timer.cancel(); // Stop timer if scroll controller is not attached
+        timer.cancel();
         return;
       }
-      // Calculate next position based on item width (assuming items are screen width)
-      double itemWidth = MediaQuery.of(context).size.width;
-      double maxScroll = _scrollController.position.maxScrollExtent;
-      double nextPosition = _scrollController.offset + itemWidth + 10; // Add spacing width
 
-      if (nextPosition > maxScroll + itemWidth / 2) {
-        // Reset slightly before the absolute end
-        nextPosition = 0; // Go back to start
+      double itemWidth = MediaQuery.of(context).size.width; // Full screen width per banner
+      double spacing = 10; // Or get from your actual item padding/margin
+      double fullItemWidth = itemWidth + spacing;
+
+      double maxScroll = _scrollController.position.maxScrollExtent;
+      double nextPosition = _currentIndex * fullItemWidth;
+
+      if (nextPosition > maxScroll - itemWidth / 2) {
+        _currentIndex = 0;
+        nextPosition = 0;
+      } else {
+        _currentIndex++;
       }
 
       _scrollController.animateTo(
         nextPosition,
-        duration: const Duration(milliseconds: 600), // Smoother animation
+        duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOut,
       );
     });
@@ -325,14 +340,15 @@ class _HomeContentState extends State<HomeContent> {
       child: Padding(
         padding: const EdgeInsets.all(12.0), // Consistent padding
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Align titles to the left
+          crossAxisAlignment:
+          CrossAxisAlignment.start, // Align titles to the left
           children: [
             const SizedBox(height: 10),
             _banner(screenWidth, screenHeight), // Banner Section
             const SizedBox(height: 20),
             _sectionTitle("Mostly Used Apps"), // Reusable title widget
             const SizedBox(height: 10),
-            _mostlyUsedApps(screenWidth, screenHeight), // Mostly Used Apps Section
+            _mostlyUsedApps(screenWidth, screenHeight),
             const SizedBox(height: 20),
             const HorizontalMenu(), // Horizontal Filter Menu
             const SizedBox(height: 20),
@@ -353,7 +369,7 @@ class _HomeContentState extends State<HomeContent> {
         data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
         child: Text(
           '$title',
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
       ),
     );
@@ -376,7 +392,8 @@ class _HomeContentState extends State<HomeContent> {
     final double itemWidth = screenWidth / 4;
 
     return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0), // Lock text scale here
+      data: MediaQuery.of(context).copyWith(
+          textScaleFactor: 1.0), // Lock text scale here
       child: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
@@ -428,15 +445,20 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-
-  // Helper to build individual Quick Menu items - **APPLY FIX HERE**
-
   // Builds the Mostly Used Apps Section
   Widget _mostlyUsedApps(double screenWidth, double screenHeight) {
     final List<Map<String, String>> mostlyUsedItems = [
       {'image': 'assets/image33.png', 'label': 'DSR', 'route': 'dsr'},
-      {'image': 'assets/image34.png', 'label': 'Staff\nAttendance', 'route': 'attendance'},
-      {'image': 'assets/image35.png', 'label': 'DSR\nException', 'route': 'dsr_exception'},
+      {
+        'image': 'assets/image34.png',
+        'label': 'Staff\nAttendance',
+        'route': 'attendance'
+      },
+      {
+        'image': 'assets/image35.png',
+        'label': 'DSR\nException',
+        'route': 'dsr_exception'
+      },
       {'image': 'assets/image36.png', 'label': 'Token Scan', 'route': 'scanner'},
     ];
 
@@ -494,14 +516,16 @@ class _HomeContentState extends State<HomeContent> {
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 print('Error loading mostly used image ($imagePath): $error');
-                return const Icon(Icons.error_outline, color: Colors.red);
+                return const Icon(Icons.error_outline,
+                    color: Colors.red); // Placeholder
               },
             ),
           ),
         ),
         const SizedBox(height: 8),
         MediaQuery(
-          data: MediaQueryData.fromWindow(WidgetsBinding.instance.window).copyWith(textScaleFactor: 1.0),
+          data: MediaQueryData.fromWindow(WidgetsBinding.instance.window)
+              .copyWith(textScaleFactor: 1.0),
           child: Text(
             text,
             textAlign: TextAlign.center,
@@ -514,12 +538,10 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-
   // Builds the Auto-Scrolling Banner Section
   Widget _banner(double screenWidth, double screenHeight) {
     // Use screenWidth obtained in build method
     return SizedBox(
-      // Constrain the height of the banner area
       height: screenHeight * 0.2, // Adjust height as needed
       child: ListView.builder(
         controller: _scrollController,
@@ -528,8 +550,10 @@ class _HomeContentState extends State<HomeContent> {
         itemBuilder: (context, index) {
           // Add spacing between items except for the last one
           return Padding(
-            padding: EdgeInsets.only(right: index < _bannerImagePaths.length - 1 ? 10.0 : 0.0),
-            child: _buildBannerItem(screenWidth, screenHeight, _bannerImagePaths[index]),
+            padding: EdgeInsets.only(
+                right: index < _bannerImagePaths.length - 1 ? 10.0 : 0.0),
+            child: _buildBannerItem(
+                screenWidth, screenHeight, _bannerImagePaths[index]),
           );
         },
       ),
@@ -537,25 +561,30 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   // Builds individual banner items
-  Widget _buildBannerItem(double screenWidth, double screenHeight, String imagePath) {
+  Widget _buildBannerItem(
+      double screenWidth, double screenHeight, String imagePath) {
     return Container(
-      width: screenWidth - (2 * 12.0), // Adjust width based on parent padding
-      // height: screenHeight * 0.2, // Height is controlled by SizedBox wrapper
+      width: screenWidth - (2 * 12.0),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade400, width: 1.0), // Slightly lighter border
         borderRadius: BorderRadius.circular(8.0), // Rounded corners for banners
+        border: Border.all(
+          color: Colors.grey.shade400,
+          width: 1.0,
+        ), // Slightly lighter border
       ),
-      child: ClipRRect( // Clip image to rounded corners
-        borderRadius: BorderRadius.circular(7.0), // Slightly less than container border radius
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(
+            7.0), // Slightly less than container border radius
         child: Image.asset(
           imagePath,
           fit: BoxFit.cover, // Use cover to fill the container, might crop
-          // Good error handling
           errorBuilder: (context, error, stackTrace) {
             print('Error loading banner image ($imagePath): $error');
             return Container(
                 color: Colors.grey.shade200,
-                child: const Center(child: Icon(Icons.image_not_supported, color: Colors.grey)));
+                child: const Center(
+                    child: Icon(Icons.image_not_supported,
+                        color: Colors.grey))); // Placeholder
           },
         ),
       ),
@@ -601,11 +630,15 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
               style: OutlinedButton.styleFrom(
                 backgroundColor: isSelected ? Colors.blue : Colors.white,
                 foregroundColor: isSelected ? Colors.white : Colors.blue,
-                side: BorderSide(color: isSelected ? Colors.blue : Colors.grey.shade400),
+                side: BorderSide(
+                    color: isSelected
+                        ? Colors.blue
+                        : Colors.grey.shade400),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               onPressed: () {
                 setState(() {
@@ -614,10 +647,12 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
                 print('$label selected');
               },
               child: MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                data: MediaQuery.of(context).copyWith(
+                    textScaleFactor: 1.0),
                 child: Text(
                   label,
-                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w500, fontSize: 14),
                 ),
               ),
             ),
@@ -627,5 +662,3 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
     );
   }
 }
-
-

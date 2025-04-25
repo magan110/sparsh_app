@@ -309,50 +309,45 @@ class _DsrRetailerInOutState extends State<DsrRetailerInOut> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) =>
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade400),
-        ),
-        child: DropdownSearch<String>(
-          items: items,
-          selectedItem: selected,
-          onChanged: onChanged,
-          popupProps: PopupProps.menu(
-            showSearchBox: true,
-            searchFieldProps: const TextFieldProps(
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: TextStyle(color: Colors.black),
-                fillColor: Colors.white,
-                filled: true,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
+      DropdownSearch<String>(
+        items: items,
+        selectedItem: selected,
+        onChanged: onChanged,
+        popupProps: PopupProps.menu(
+          showSearchBox: true,
+          searchFieldProps: const TextFieldProps(
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              hintStyle: TextStyle(color: Colors.black),
+              fillColor: Colors.white,
+              filled: true,
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
               ),
-            ),
-            itemBuilder: (c, item, sel) => Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                item,
-                style: TextStyle(color: Colors.black),
-              ),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
-          dropdownDecoratorProps: DropDownDecoratorProps(
-            dropdownSearchDecoration: InputDecoration(
-              hintText: '',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey.shade400),
-                borderRadius: BorderRadius.circular(10),
-              ),
+          itemBuilder: (context, item, isSelected) => Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(item, style: const TextStyle(color: Colors.black)),
+          ),
+        ),
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          dropdownSearchDecoration: InputDecoration(
+            hintText: 'Select',
+            filled: true,
+            fillColor: Colors.white,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade400),
             ),
           ),
         ),
       );
+
 
   InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
       InputDecoration(

@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:learning2/dsr_entry_screen/dsr_retailer_in_out.dart';
 import 'package:intl/intl.dart';
+import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
+import 'package:learning2/dsr_entry_screen/phone_call_with_unregisterd_purchaser.dart';
+import 'package:learning2/dsr_entry_screen/work_from_home.dart';
+import 'Meeting_with_new_purchaser.dart';
+import 'any_other_activity.dart';
+import 'btl_activites.dart';
+import 'check_sampling_at_site.dart';
 import 'dsr_entry.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+
+import 'internal_team_meeting.dart';
+import 'office_work.dart';
+import 'on_leave.dart';
 
 class MeetingsWithContractor extends StatefulWidget {
   const MeetingsWithContractor({super.key});
@@ -20,7 +31,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
   ];
 
   String? _activityItem =
-      'Meeting with New Purchaser(Trade Purchaser)/Retailer';
+      'Meetings With Contractor / Stockist';
   final List<String> _activityDropDownItems = [
     'Select',
     'Personal Visit',
@@ -336,11 +347,113 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                     if (newValue != null) {
                       setState(() => _activityItem = newValue);
 
-                      // 🔹 Navigate on Personal Visit
-                      if (newValue == 'Personal Visit') {
+                      if (newValue != null) {
+                        setState(() => _activityItem = newValue);
+
+                        // 🔹 Navigate on Personal Visit
+                        if (newValue == 'Personal Visit') {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const DsrRetailerInOut(),
+                            ),
+                          );
+                        }
+                      }
+                      // 🔹 Navigate on Phone Call with Builder/Stockist
+                      if (newValue == 'Phone Call with Builder/Stockist') {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const DsrRetailerInOut(),
+                            builder: (_) => const PhoneCallWithBuilder(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Meetings With Contractor / Stockist
+                      if (newValue == 'Meetings With Contractor / Stockist') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const MeetingsWithContractor(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Visit to Get / Check Sampling at Site
+                      if (newValue == 'Visit to Get / Check Sampling at Site') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const CheckSamplingAtSite(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Meeting with New Purchaser(Trade Purchaser)/Retailer
+                      if (newValue == 'Meeting with New Purchaser(Trade Purchaser)/Retailer') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const MeetingWithNewPurchaser(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on BTL Activities
+                      if (newValue == 'BTL Activities') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const BtlActivites(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Internal Team Meetings / Review Meetings
+                      if (newValue == 'Internal Team Meetings / Review Meetings') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const InternalTeamMeeting(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Office Work
+                      if (newValue == 'Office Work') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const OfficeWork(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on On Leave / Holiday / Off Day
+                      if (newValue == 'On Leave / Holiday / Off Day') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const OnLeave(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Work From Home
+                      if (newValue == 'Work From Home') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const WorkFromHome(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Any Other Activity
+                      if (newValue == 'Any Other Activity') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AnyOtherActivity(),
+                          ),
+                        );
+                      }
+
+                      // 🔹 Navigate on Phone call with Unregistered Purchasers
+                      if (newValue == 'Phone call with Unregistered Purchasers') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PhoneCallWithUnregisterdPurchaser(),
                           ),
                         );
                       }
@@ -710,50 +823,45 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) =>
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade400),
-        ),
-        child: DropdownSearch<String>(
-          items: items,
-          selectedItem: selected,
-          onChanged: onChanged,
-          popupProps: PopupProps.menu(
-            showSearchBox: true,
-            searchFieldProps: const TextFieldProps(
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: TextStyle(color: Colors.black),
-                fillColor: Colors.white,
-                filled: true,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
+      DropdownSearch<String>(
+        items: items,
+        selectedItem: selected,
+        onChanged: onChanged,
+        popupProps: PopupProps.menu(
+          showSearchBox: true,
+          searchFieldProps: const TextFieldProps(
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              hintStyle: TextStyle(color: Colors.black),
+              fillColor: Colors.white,
+              filled: true,
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
               ),
-            ),
-            itemBuilder: (c, item, sel) => Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                item,
-                style: TextStyle(color: Colors.black),
-              ),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
-          dropdownDecoratorProps: DropDownDecoratorProps(
-            dropdownSearchDecoration: InputDecoration(
-              hintText: '',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey.shade400),
-                borderRadius: BorderRadius.circular(10),
-              ),
+          itemBuilder: (context, item, isSelected) => Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(item, style: const TextStyle(color: Colors.black)),
+          ),
+        ),
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          dropdownSearchDecoration: InputDecoration(
+            hintText: 'Select',
+            filled: true,
+            fillColor: Colors.white,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade400),
             ),
           ),
         ),
       );
+
 
   InputDecoration _inputDecoration(String hint, {IconData? suffix}) =>
       InputDecoration(
