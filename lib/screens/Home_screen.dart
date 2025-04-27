@@ -6,6 +6,8 @@ import 'package:learning2/screens/tasks_screen.dart';
 import '../dsr_entry_screen/dsr_entry.dart';
 import 'dsr_screen.dart';
 import 'mail_screen.dart'; // Make sure dsr_screen.dart exists
+import 'app_drawer.dart'; // Import the new AppDrawer file
+
 
 // Main HomeScreen Widget
 class HomeScreen extends StatefulWidget {
@@ -32,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: _buildAppBar(), // Custom AppBar
-        drawer: _buildDrawer(), // Custom Navigation Drawer
+        drawer: const AppDrawer(), // Use the new AppDrawer widget
         body: IndexedStack(
           // Use IndexedStack to preserve state of screens
           index: _selectedIndex,
@@ -88,75 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ],
-    );
-  }
-
-  // Builds the Navigation Drawer
-  Widget _buildDrawer() {
-    return Drawer(
-      backgroundColor: Colors.white,
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              color: Colors.blue, // Consider using Theme colors
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Error handling for image loading is good
-                Image.asset(
-                  'assets/image27.png', // Ensure this asset exists in pubspec.yaml
-                  height: 80,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Error loading drawer header image: $error');
-                    return const Icon(Icons.business,
-                        size: 80, color: Colors.white); // Placeholder icon
-                  },
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Birla White Ltd.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Helper method for creating drawer items
-          _buildDrawerItem('Transactions', Icons.swap_horiz),
-          _buildDrawerItem('Reports', Icons.assessment),
-          _buildDrawerItem('Masters', Icons.folder),
-          _buildDrawerItem('Exports', Icons.import_export),
-          _buildDrawerItem('CASC', Icons.category),
-          _buildDrawerItem('Miscellaneous', Icons.widgets),
-          _buildDrawerItem('Advertisement', Icons.campaign),
-          // Add other drawer items as needed
-        ],
-      ),
-    );
-  }
-
-  // Helper to build individual drawer list items
-  Widget _buildDrawerItem(String title, IconData icon) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueGrey),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-      trailing:
-      const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-      onTap: () {
-        // TODO: Implement navigation logic for each drawer item
-        print('$title tapped');
-        Navigator.pop(context); // Close the drawer after selection
-        // Example navigation:
-        // if (title == 'Reports') {
-        //  Navigator.push(context, MaterialPageRoute(builder: (context) => ReportsScreen()));
-        // }
-      },
     );
   }
 
@@ -564,7 +497,7 @@ class _HomeContentState extends State<HomeContent> {
   Widget _buildBannerItem(
       double screenWidth, double screenHeight, String imagePath) {
     return Container(
-      width: screenWidth - (2 * 12.0),
+      width: screenWidth,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0), // Rounded corners for banners
         border: Border.all(
