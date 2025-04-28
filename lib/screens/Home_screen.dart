@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:learning2/screens/profile_screen.dart'; // Import the scanner screen
+import 'package:learning2/reports/Gerneral%20Reports/account_statement.dart';
+import 'package:learning2/screens/profile_screen.dart';
 import 'package:learning2/screens/tasks_screen.dart';
 import 'package:learning2/screens/token_scan.dart';
 import '../dsr_entry_screen/dsr_entry.dart';
+import '../reports/scheme_discount/rpl_outlet_tracker.dart';
 import 'dsr_screen.dart';
 import 'mail_screen.dart';
-import 'app_drawer.dart';
+import 'app_drawer.dart'; // <<< ADD THIS IMPORT
 
-// Main HomeScreen Widget
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -19,7 +20,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // List of screens for bottom navigation
   final List<Widget> _screens = [
     const HomeContent(),
     const TasksScreen(),
@@ -43,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Builds the AppBar
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       elevation: 2,
@@ -70,17 +69,14 @@ class _HomeScreenState extends State<HomeScreen> {
       iconTheme: const IconThemeData(color: Colors.white),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none,
-              size: 30, color: Colors.white),
+          icon: const Icon(Icons.notifications_none, size: 30, color: Colors.white),
           onPressed: () {
-            // TODO: Implement notification action
             print('Notifications tapped');
           },
         ),
         IconButton(
           icon: const Icon(Icons.search, size: 30, color: Colors.white),
           onPressed: () {
-            // TODO: Implement search action
             print('Search tapped');
           },
         ),
@@ -88,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Builds the custom Bottom Navigation Bar
   Widget _buildBottomBar() {
     final List<Map<String, dynamic>> bottomNavItems = [
       {'icon': Icons.home, 'label': 'Home'},
@@ -127,9 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                color: isSelected
-                    ? Colors.blue.withOpacity(0.15)
-                    : Colors.transparent,
+                color: isSelected ? Colors.blue.withOpacity(0.15) : Colors.transparent,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -137,9 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(
                     item['icon'],
                     size: isSelected ? 30 : 28,
-                    color: isSelected
-                        ? Colors.blue
-                        : Colors.grey[600],
+                    color: isSelected ? Colors.blue : Colors.grey[600],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -147,9 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected ? Colors.blue : Colors.grey[600],
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   )
                 ],
@@ -162,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Content Widget for the Home Tab
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -182,6 +170,8 @@ class _HomeContentState extends State<HomeContent> {
     'assets/image24.jpg',
   ];
 
+  int _currentIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -189,15 +179,12 @@ class _HomeContentState extends State<HomeContent> {
     if (_bannerImagePaths.length > 1) {
       _startAutoScroll();
     }
-
     _scrollController.addListener(() {
       if (_scrollController.position.isScrollingNotifier.value == false) {
         _restartAutoScroll();
       }
     });
   }
-
-  int _currentIndex = 0;
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
@@ -206,11 +193,9 @@ class _HomeContentState extends State<HomeContent> {
         timer.cancel();
         return;
       }
-
       double itemWidth = MediaQuery.of(context).size.width;
       double spacing = 10;
       double fullItemWidth = itemWidth + spacing;
-
       double maxScroll = _scrollController.position.maxScrollExtent;
       double nextPosition = _currentIndex * fullItemWidth;
 
@@ -276,21 +261,16 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  // Reusable Section Title Widget
   Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4.0),
-      child: MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-        child: Text(
-          '$title',
-          style: const TextStyle(fontSize: 16),
-        ),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 16),
       ),
     );
   }
 
-  // Builds the Quick Menu Grid Section
   Widget _quickMenu(double screenHeight, double screenWidth) {
     final List<Map<String, String>> quickMenuItems = [
       {'image': 'assets/image37.png', 'label': 'RPL Outlet\nTracker'},
@@ -303,34 +283,49 @@ class _HomeContentState extends State<HomeContent> {
       {'image': 'assets/image31.png', 'label': 'Order\nHistory'},
       {'image': 'assets/image32.png', 'label': 'Delivery\nStatus'},
       {'image': 'assets/image40.png', 'label': 'First Aid\nPersonal'},
+      {'image': 'assets/image41.png', 'label': 'Account\nStatement'},
     ];
     final double itemWidth = screenWidth / 4;
 
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(
-          textScaleFactor: 1.0),
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
-          border: Border.all(color: Colors.grey.shade300, width: 1),
-          color: Colors.white,
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        color: Colors.white,
+      ),
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          crossAxisSpacing: 8.0,
+          mainAxisSpacing: 8.0,
+          childAspectRatio: itemWidth / (itemWidth + 40),
         ),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
-            childAspectRatio: itemWidth / (itemWidth + 40),
-          ),
-          itemCount: quickMenuItems.length,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            final item = quickMenuItems[index];
-            return _buildQuickMenuItem(item['image']!, item['label']!, itemWidth);
-          },
-        ),
+        itemCount: quickMenuItems.length,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          final item = quickMenuItems[index];
+          return GestureDetector(
+            onTap: () {
+              print('${item['label']} tapped');
+              if (item['label']!.contains('RPL Outlet')) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RplOutletTracker()),
+                );
+              }
+              else if (item['label']!.contains('Account')) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AccountStatement()),
+                );
+              }
+              // TODO: Add other navigations for different labels if needed
+            },
+            child: _buildQuickMenuItem(item['image']!, item['label']!, itemWidth),
+          );
+        },
       ),
     );
   }
@@ -349,10 +344,7 @@ class _HomeContentState extends State<HomeContent> {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.black,
-          ),
+          style: const TextStyle(fontSize: 12, color: Colors.black),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
@@ -360,20 +352,11 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  // Builds the Mostly Used Apps Section
   Widget _mostlyUsedApps(double screenWidth, double screenHeight) {
     final List<Map<String, String>> mostlyUsedItems = [
       {'image': 'assets/image33.png', 'label': 'DSR', 'route': 'dsr'},
-      {
-        'image': 'assets/image34.png',
-        'label': 'Staff\nAttendance',
-        'route': 'attendance'
-      },
-      {
-        'image': 'assets/image35.png',
-        'label': 'DSR\nException',
-        'route': 'dsr_exception'
-      },
+      {'image': 'assets/image34.png', 'label': 'Staff\nAttendance', 'route': 'attendance'},
+      {'image': 'assets/image35.png', 'label': 'DSR\nException', 'route': 'dsr_exception'},
       {'image': 'assets/image36.png', 'label': 'Token Scan', 'route': 'scanner'},
     ];
 
@@ -391,19 +374,10 @@ class _HomeContentState extends State<HomeContent> {
             onTap: () {
               print('${item['label']} tapped');
               if (item['route'] == 'dsr') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DsrEntry()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const DsrEntry()));
               } else if (item['route'] == 'scanner') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          TokenScanApp()), // Navigate to ScannerScreen
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => TokenScanApp()));
               }
-              // TODO: Add navigation for 'attendance' and 'dsr_exception'
             },
             child: _buildMostlyUsedAppItem(item['image']!, item['label']!),
           );
@@ -419,7 +393,6 @@ class _HomeContentState extends State<HomeContent> {
         Material(
           elevation: 4.0,
           borderRadius: BorderRadius.circular(12.0),
-          shadowColor: Colors.grey.withOpacity(0.5),
           child: Container(
             width: 56,
             height: 56,
@@ -428,34 +401,21 @@ class _HomeContentState extends State<HomeContent> {
               borderRadius: BorderRadius.circular(12.0),
               color: Colors.white,
             ),
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                print('Error loading mostly used image ($imagePath): $error');
-                return const Icon(Icons.error_outline,
-                    color: Colors.red);
-              },
-            ),
+            child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
         const SizedBox(height: 8),
-        MediaQuery(
-          data: MediaQueryData.fromWindow(WidgetsBinding.instance.window)
-              .copyWith(textScaleFactor: 1.0),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, color: Colors.black87),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12, color: Colors.black87),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
   }
 
-  // Builds the Auto-Scrolling Banner Section
   Widget _banner(double screenWidth, double screenHeight) {
     return SizedBox(
       height: screenHeight * 0.2,
@@ -466,48 +426,33 @@ class _HomeContentState extends State<HomeContent> {
         itemBuilder: (context, index) {
           return Padding(
             padding: EdgeInsets.only(
-                right: index < _bannerImagePaths.length - 1 ? 10.0 : 0.0),
-            child: _buildBannerItem(
-                screenWidth, screenHeight, _bannerImagePaths[index]),
+              right: index < _bannerImagePaths.length - 1 ? 10.0 : 0.0,
+            ),
+            child: _buildBannerItem(screenWidth, screenHeight, _bannerImagePaths[index]),
           );
         },
       ),
     );
   }
 
-  // Builds individual banner items
-  Widget _buildBannerItem(
-      double screenWidth, double screenHeight, String imagePath) {
+  Widget _buildBannerItem(double screenWidth, double screenHeight, String imagePath) {
     return Container(
       width: screenWidth,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: Colors.grey.shade400,
-          width: 1.0,
-        ),
+        border: Border.all(color: Colors.grey.shade400, width: 1.0),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(
-            7.0),
+        borderRadius: BorderRadius.circular(7.0),
         child: Image.asset(
           imagePath,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            print('Error loading banner image ($imagePath): $error');
-            return Container(
-                color: Colors.grey.shade200,
-                child: const Center(
-                    child: Icon(Icons.image_not_supported,
-                        color: Colors.grey)));
-          },
         ),
       ),
     );
   }
 }
 
-// Horizontal Filter Menu Widget
 class HorizontalMenu extends StatefulWidget {
   const HorizontalMenu({super.key});
 
@@ -545,15 +490,9 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
               style: OutlinedButton.styleFrom(
                 backgroundColor: isSelected ? Colors.blue : Colors.white,
                 foregroundColor: isSelected ? Colors.white : Colors.blue,
-                side: BorderSide(
-                    color: isSelected
-                        ? Colors.blue
-                        : Colors.grey.shade400),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                side: BorderSide(color: isSelected ? Colors.blue : Colors.grey.shade400),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               onPressed: () {
                 setState(() {
@@ -561,14 +500,9 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
                 });
                 print('$label selected');
               },
-              child: MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                    textScaleFactor: 1.0),
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w500, fontSize: 14),
-                ),
+              child: Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
               ),
             ),
           );
