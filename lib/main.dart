@@ -21,7 +21,7 @@ import 'package:learning2/screens/splash_screen.dart';
 
 void main() {
   runApp(const MaterialApp(debugShowCheckedModeBanner:false,
-      home:HomeScreen()));
+      home:SplashScreen()));
 }
 
 
