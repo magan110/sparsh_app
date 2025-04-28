@@ -16,6 +16,7 @@ import 'package:learning2/reports/SAP%20Reports/day_summary.dart';
 import 'package:learning2/reports/Sales%20Report/sales_growth.dart';
 import 'package:learning2/reports/scheme_discount/rpl_outlet_tracker.dart';
 import 'package:learning2/screens/Home_screen.dart';
+import 'package:learning2/screens/login_screen.dart';
 import 'package:learning2/screens/splash_screen.dart';
 
 void main() {

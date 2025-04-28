@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'Home_screen.dart';
-import 'log_in_otp.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart'; // Import for IOClient
+import 'package:fluttertoast/fluttertoast.dart'; // Import for showing toast messages
+import 'dart:io'; // Import for Platform and HttpClient
+import 'Home_screen.dart'; // Import HomeScreen
+import 'log_in_otp.dart'; // Import LogInOtp
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,6 +15,112 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final String apiUrl = "https://qa.birlawhite.com:55232/api/Auth/execute";
+
+  // This method makes a POST request to the API with user credentials
+  Future<void> loginUser() async {
+    final String userID = _usernameController.text.trim();
+    final String password = _passwordController.text.trim();
+
+    if (userID.isEmpty || password.isEmpty) {
+      Fluttertoast.showToast(msg: "Please enter both username and password");
+      return;
+    }
+
+    // Replace this with your actual appRegId
+    final String appRegId = "";
+
+    final Map<String, dynamic> requestBody = {
+      'userID': userID,
+      'password': password,
+      'appRegId': userID + password
+    };
+
+    try {
+      // Check for internet connectivity
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isEmpty || result.first.rawAddress.isEmpty) {
+        throw SocketException('No Internet Connection');
+      }
+
+      // Use IOClient to bypass SSL certificate verification (if needed)
+      final client = IOClient(HttpClient()..badCertificateCallback = (X509Certificate cert, String host, int port) => true);
+
+      // Send POST request with username, password, and appRegId
+      final response = await client.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+
+      // Check the response status
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        print("Response Data: $responseData");
+
+        if (responseData['msg'] == 'Authentication successful') {
+          // Save necessary data or handle response for successful authentication
+
+          // Navigate to the HomeScreen after successful login
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        } else {
+          Fluttertoast.showToast(msg: "Authentication failed");
+        }
+      } else {
+        Fluttertoast.showToast(msg: "Failed to authenticate. Please try again.");
+      }
+
+      client.close();
+    } on SocketException catch (_) {
+      print('Not connected to the internet');
+      // Show a dialog to the user indicating no internet connection.
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('No Internet Connection'),
+            content: const Text('Please check your internet connection and try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('An error occurred: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -30,60 +141,55 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 30),
-              MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                child: const Text(
-                  'Log In',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 30,
-                    decoration: TextDecoration.underline,
-                  ),
+              const Text(
+                'Log In',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 30,
+                  decoration: TextDecoration.underline,
                 ),
               ),
 
               // Username TextField
-              MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 39, right: 39, top: 55),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      labelStyle: const TextStyle(fontSize: 20, color: Colors.cyan),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
+              Padding(
+                padding: const EdgeInsets.only(left: 39, right: 39, top: 55),
+                child: TextField(
+                  controller: _usernameController,
+                  decoration: InputDecoration(
+                    labelText: 'User ID',
+                    labelStyle: const TextStyle(fontSize: 20, color: Colors.cyan),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: const BorderSide(color: Colors.grey),
                     ),
                   ),
                 ),
               ),
 
               // Password TextField
-              MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 39, right: 39, top: 20),
-                  child: TextField(
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: const TextStyle(fontSize: 20, color: Colors.cyan),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
+              Padding(
+                padding: const EdgeInsets.only(left: 39, right: 39, top: 20),
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: const TextStyle(fontSize: 20, color: Colors.cyan),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: const BorderSide(color: Colors.grey),
                     ),
                   ),
                 ),
@@ -92,35 +198,16 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(left: 200),
-                child: MediaQuery(
-                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: const Text(
-                      'Forgotten Password?',
-                      style: TextStyle(color: Colors.blue, fontSize: 16),
-                    ),
-                  ),
+                child: const Text(
+                  'Forgotten Password?',
+                  style: TextStyle(color: Colors.blue, fontSize: 16),
                 ),
               ),
               const SizedBox(height: 20),
 
               // Login Button
               InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        const begin = 0.0;
-                        const end = 1.0;
-                        var tween = Tween(begin: begin, end: end).animate(animation);
-                        return FadeTransition(opacity: tween, child: child);
-                      },
-                    ),
-                  );
-                },
+                onTap: loginUser, // Call the loginUser method
                 child: Container(
                   height: 50,
                   width: 200,
@@ -128,13 +215,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.blue,
                     borderRadius: BorderRadius.all(Radius.circular(20)),
                   ),
-                  child: Center(
-                    child: MediaQuery(
-                      data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                      child: const Text(
-                        "Log In",
-                        style: TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.w600),
-                      ),
+                  child: const Center(
+                    child: Text(
+                      "Log In",
+                      style: TextStyle(
+                          fontSize: 22,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -147,30 +234,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    PageRouteBuilder(
-                      transitionDuration: const Duration(milliseconds: 300),
-                      pageBuilder: (context, animation, secondaryAnimation) => const LogInOtp(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        const begin = Offset(0.0, 1.0);
-                        const end = Offset.zero;
-                        const curve = Curves.easeInOut;
-
-                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-                        return SlideTransition(
-                          position: animation.drive(tween),
-                          child: child,
-                        );
-                      },
-                    ),
+                    MaterialPageRoute(builder: (context) => const LogInOtp()),
                   );
                 },
-                child: MediaQuery(
-                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                  child: const Text(
-                    'Login With OTP',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                child: const Text(
+                  'Login With OTP',
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
 
@@ -179,18 +248,18 @@ class _LoginScreenState extends State<LoginScreen> {
               // Footer Text
               Padding(
                 padding: const EdgeInsets.only(bottom: 30.0),
-                child: MediaQuery(
-                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Developed By Birla White IT",
-                        style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w400),
-                      ),
-                      Icon(Icons.favorite, color: Colors.red),
-                    ],
-                  ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Developed By Birla White IT",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400),
+                    ),
+                    Icon(Icons.favorite, color: Colors.red),
+                  ],
                 ),
               ),
             ],
