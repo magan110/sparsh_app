@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:learning2/screens/profile_screen.dart';
-import 'package:learning2/screens/scanner_screen.dart';
+import 'package:learning2/screens/profile_screen.dart'; // Import the scanner screen
 import 'package:learning2/screens/tasks_screen.dart';
+import 'package:learning2/screens/token_scan.dart';
 import '../dsr_entry_screen/dsr_entry.dart';
 import 'dsr_screen.dart';
-import 'mail_screen.dart'; // Make sure dsr_screen.dart exists
-import 'app_drawer.dart'; // Import the new AppDrawer file
-
+import 'mail_screen.dart';
+import 'app_drawer.dart';
 
 // Main HomeScreen Widget
 class HomeScreen extends StatefulWidget {
@@ -20,12 +19,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // List of screens to navigate between using the bottom bar
+  // List of screens for bottom navigation
   final List<Widget> _screens = [
-    const HomeContent(), // The main content for the home tab
-    const TasksScreen(), // Placeholder for Tasks Screen
-    const MailScreen(), // Placeholder for Mail Screen
-    const ProfileScreen(), // Placeholder for Profile Screen
+    const HomeContent(),
+    const TasksScreen(),
+    const MailScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -33,14 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: _buildAppBar(), // Custom AppBar
-        drawer: const AppDrawer(), // Use the new AppDrawer widget
+        appBar: _buildAppBar(),
+        drawer: const AppDrawer(),
         body: IndexedStack(
-          // Use IndexedStack to preserve state of screens
           index: _selectedIndex,
           children: _screens,
         ),
-        bottomNavigationBar: _buildBottomBar(), // Custom Bottom Navigation Bar
+        bottomNavigationBar: _buildBottomBar(),
       ),
     );
   }
@@ -48,17 +46,15 @@ class _HomeScreenState extends State<HomeScreen> {
   // Builds the AppBar
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      // Removed backgroundColor, using a gradient instead
-      elevation: 2, // Subtle shadow
+      elevation: 2,
       flexibleSpace: Container(
-        // Added flexibleSpace
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: <Color>[
-              Color(0xFF42a5f5), // Top color
-              Color(0xFFb3e5fc), // Bottom color
+              Color(0xFF42a5f5),
+              Color(0xFFb3e5fc),
             ],
           ),
         ),
@@ -66,17 +62,16 @@ class _HomeScreenState extends State<HomeScreen> {
       title: const Text(
         'SPARSH',
         style: TextStyle(
-          color: Colors.white, // Changed title color to white for better visibility
+          color: Colors.white,
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
       ),
-      iconTheme:
-      const IconThemeData(color: Colors.white), // Drawer icon color, changed to white
+      iconTheme: const IconThemeData(color: Colors.white),
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications_none,
-              size: 30, color: Colors.white), //changed to white
+              size: 30, color: Colors.white),
           onPressed: () {
             // TODO: Implement notification action
             print('Notifications tapped');
@@ -95,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Builds the custom Bottom Navigation Bar
   Widget _buildBottomBar() {
-    // Define items for the bottom bar
     final List<Map<String, dynamic>> bottomNavItems = [
       {'icon': Icons.home, 'label': 'Home'},
       {'icon': Icons.task, 'label': 'Tasks'},
@@ -104,7 +98,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Container(
-      // Add some elevation or decoration if desired
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -112,12 +105,11 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.grey.withOpacity(0.3),
             spreadRadius: 1,
             blurRadius: 5,
-            offset: const Offset(0, -1), // changes position of shadow upwards
+            offset: const Offset(0, -1),
           ),
         ],
       ),
-      padding:
-      const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0), // Adjust padding
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(bottomNavItems.length, (index) {
@@ -125,36 +117,35 @@ class _HomeScreenState extends State<HomeScreen> {
           final isSelected = _selectedIndex == index;
           return GestureDetector(
             onTap: () {
-              // Update the selected index to change the screen
               setState(() {
                 _selectedIndex = index;
               });
               print("Tapped: ${item['label']}");
             },
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200), // Animation duration
+              duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20), // More rounded corners
+                borderRadius: BorderRadius.circular(20),
                 color: isSelected
-                    ? Colors.blue.withOpacity(0.15) // Slightly stronger highlight
+                    ? Colors.blue.withOpacity(0.15)
                     : Colors.transparent,
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min, // Important for Column in Row
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     item['icon'],
-                    size: isSelected ? 30 : 28, // Adjust size difference
+                    size: isSelected ? 30 : 28,
                     color: isSelected
                         ? Colors.blue
-                        : Colors.grey[600], // Use theme/specific colors
+                        : Colors.grey[600],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     item['label'],
                     style: TextStyle(
-                      fontSize: 12, // Slightly smaller text
+                      fontSize: 12,
                       color: isSelected ? Colors.blue : Colors.grey[600],
                       fontWeight: isSelected
                           ? FontWeight.bold
@@ -181,9 +172,8 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   late ScrollController _scrollController;
-  Timer? _autoScrollTimer; // Make Timer nullable
+  Timer? _autoScrollTimer;
   double _scrollPosition = 0.0;
-  // Define image paths for the banner
   final List<String> _bannerImagePaths = [
     'assets/image1.png',
     'assets/image21.jpg',
@@ -196,15 +186,12 @@ class _HomeContentState extends State<HomeContent> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    // Start timer only if there's more than one banner item
     if (_bannerImagePaths.length > 1) {
       _startAutoScroll();
     }
 
-    // Add listener to restart timer if user scrolls manually
     _scrollController.addListener(() {
       if (_scrollController.position.isScrollingNotifier.value == false) {
-        // Optional: Debounce this if it triggers too often
         _restartAutoScroll();
       }
     });
@@ -213,15 +200,15 @@ class _HomeContentState extends State<HomeContent> {
   int _currentIndex = 0;
 
   void _startAutoScroll() {
-    _autoScrollTimer?.cancel(); // Cancel existing timer
+    _autoScrollTimer?.cancel();
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (!_scrollController.hasClients) {
         timer.cancel();
         return;
       }
 
-      double itemWidth = MediaQuery.of(context).size.width; // Full screen width per banner
-      double spacing = 10; // Or get from your actual item padding/margin
+      double itemWidth = MediaQuery.of(context).size.width;
+      double spacing = 10;
       double fullItemWidth = itemWidth + spacing;
 
       double maxScroll = _scrollController.position.maxScrollExtent;
@@ -244,10 +231,8 @@ class _HomeContentState extends State<HomeContent> {
 
   void _restartAutoScroll() {
     _autoScrollTimer?.cancel();
-    // Add a small delay before restarting after manual scroll
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted && _bannerImagePaths.length > 1) {
-        // Check if widget is still mounted
         _startAutoScroll();
       }
     });
@@ -255,39 +240,36 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   void dispose() {
-    _autoScrollTimer?.cancel(); // Cancel timer safely
-    _scrollController.removeListener(_restartAutoScroll); // Remove listener
+    _autoScrollTimer?.cancel();
+    _scrollController.removeListener(_restartAutoScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get screen dimensions once
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
 
     return SingleChildScrollView(
-      // Allows the whole column to scroll if needed
       child: Padding(
-        padding: const EdgeInsets.all(12.0), // Consistent padding
+        padding: const EdgeInsets.all(12.0),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start, // Align titles to the left
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-            _banner(screenWidth, screenHeight), // Banner Section
+            _banner(screenWidth, screenHeight),
             const SizedBox(height: 20),
-            _sectionTitle("Mostly Used Apps"), // Reusable title widget
+            _sectionTitle("Mostly Used Apps"),
             const SizedBox(height: 10),
             _mostlyUsedApps(screenWidth, screenHeight),
             const SizedBox(height: 20),
-            const HorizontalMenu(), // Horizontal Filter Menu
+            const HorizontalMenu(),
             const SizedBox(height: 20),
-            _sectionTitle("Quick Menu"), // Reusable title widget
+            _sectionTitle("Quick Menu"),
             const SizedBox(height: 10),
-            _quickMenu(screenHeight, screenWidth) // Quick Menu Grid Section
+            _quickMenu(screenHeight, screenWidth)
           ],
         ),
       ),
@@ -297,7 +279,7 @@ class _HomeContentState extends State<HomeContent> {
   // Reusable Section Title Widget
   Widget _sectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4.0), // Slight indent
+      padding: const EdgeInsets.only(left: 4.0),
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
         child: Text(
@@ -326,7 +308,7 @@ class _HomeContentState extends State<HomeContent> {
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
-          textScaleFactor: 1.0), // Lock text scale here
+          textScaleFactor: 1.0),
       child: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
@@ -416,7 +398,9 @@ class _HomeContentState extends State<HomeContent> {
               } else if (item['route'] == 'scanner') {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ScannerScreen()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          TokenScanApp()), // Navigate to ScannerScreen
                 );
               }
               // TODO: Add navigation for 'attendance' and 'dsr_exception'
@@ -450,7 +434,7 @@ class _HomeContentState extends State<HomeContent> {
               errorBuilder: (context, error, stackTrace) {
                 print('Error loading mostly used image ($imagePath): $error');
                 return const Icon(Icons.error_outline,
-                    color: Colors.red); // Placeholder
+                    color: Colors.red);
               },
             ),
           ),
@@ -473,15 +457,13 @@ class _HomeContentState extends State<HomeContent> {
 
   // Builds the Auto-Scrolling Banner Section
   Widget _banner(double screenWidth, double screenHeight) {
-    // Use screenWidth obtained in build method
     return SizedBox(
-      height: screenHeight * 0.2, // Adjust height as needed
+      height: screenHeight * 0.2,
       child: ListView.builder(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
         itemCount: _bannerImagePaths.length,
         itemBuilder: (context, index) {
-          // Add spacing between items except for the last one
           return Padding(
             padding: EdgeInsets.only(
                 right: index < _bannerImagePaths.length - 1 ? 10.0 : 0.0),
@@ -499,25 +481,25 @@ class _HomeContentState extends State<HomeContent> {
     return Container(
       width: screenWidth,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.0), // Rounded corners for banners
+        borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
           color: Colors.grey.shade400,
           width: 1.0,
-        ), // Slightly lighter border
+        ),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(
-            7.0), // Slightly less than container border radius
+            7.0),
         child: Image.asset(
           imagePath,
-          fit: BoxFit.cover, // Use cover to fill the container, might crop
+          fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             print('Error loading banner image ($imagePath): $error');
             return Container(
                 color: Colors.grey.shade200,
                 child: const Center(
                     child: Icon(Icons.image_not_supported,
-                        color: Colors.grey))); // Placeholder
+                        color: Colors.grey)));
           },
         ),
       ),
@@ -534,7 +516,7 @@ class HorizontalMenu extends StatefulWidget {
 }
 
 class _HorizontalMenuState extends State<HorizontalMenu> {
-  String selected = "Quick Menu"; // Default selection
+  String selected = "Quick Menu";
 
   final List<String> menuItems = [
     "Quick Menu",
@@ -595,3 +577,4 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
     );
   }
 }
+
