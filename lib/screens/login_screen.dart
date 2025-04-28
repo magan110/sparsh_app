@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final String apiUrl = "https://qa.birlawhite.com:55232/api/Auth/execute";
+  bool _obscurePassword = true; // Track password visibility
 
   // This method makes a POST request to the API with user credentials
   Future<void> loginUser() async {
@@ -172,12 +173,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              // Password TextField
+              // Password TextField with Show Password Icon
               Padding(
                 padding: const EdgeInsets.only(left: 39, right: 39, top: 20),
                 child: TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword, // Toggle based on _obscurePassword
                   decoration: InputDecoration(
                     labelText: 'Password',
                     labelStyle: const TextStyle(fontSize: 20, color: Colors.cyan),
@@ -190,6 +191,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                       borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.cyan,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword; // Toggle password visibility
+                        });
+                      },
                     ),
                   ),
                 ),
