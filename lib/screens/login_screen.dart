@@ -115,14 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         const begin = 0.0;
                         const end = 1.0;
-                        const curve = Curves.easeIn;
-
-                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-                        return FadeTransition(
-                          opacity: animation.drive(tween),
-                          child: child,
-                        );
+                        var tween = Tween(begin: begin, end: end).animate(animation);
+                        return FadeTransition(opacity: tween, child: child);
                       },
                     ),
                   );

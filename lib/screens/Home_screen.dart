@@ -577,4 +577,3 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
     );
   }
 }
-
