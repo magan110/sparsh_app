@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 // Custom Text Widget
 class TextModel {
   Widget buildText(BuildContext context, String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 16, // Consistent font size
-        fontWeight: FontWeight.w500, // Made labels medium weight
-        color: Colors.black87, // Slightly darker text for better contrast
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 14, // Consistent font size
+          fontWeight: FontWeight.w500, // Made labels medium weight
+          color: Colors.black87, // Slightly darker text for better contrast
+        ),
       ),
     );
   }
@@ -315,316 +318,320 @@ class _DayWiseSummaryState extends State<DayWiseSummary> {
     }
 
     return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+              ),
             ),
+            backgroundColor: Colors.lightBlueAccent,
+            title: const Text(
+              'Day Wise Summary',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            elevation: 4.0,
           ),
-          backgroundColor: Colors.lightBlueAccent,
-          title: const Text(
-            'Day Wise Summary',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          elevation: 4.0,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Form Section
-                Card(
-                  elevation: 2.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Form Section
+                  Card(
+                    elevation: 2.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          textModel.buildText(context, 'Start Date'),
+                          const SizedBox(height: 8),
+                          DatePickerTextField(controller: _startDateController),
+                          const SizedBox(height: 16),
+                          textModel.buildText(context, 'End Date'),
+                          const SizedBox(height: 8),
+                          DatePickerTextField(controller: _endDateController),
+                          const SizedBox(height: 16),
+                          textModel.buildText(
+                              context, 'Self / Guarantee Code / Merge Code *'),
+                          const SizedBox(height: 8),
+                          SearchableDropdownExample(
+                            items: items,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedSelfCode = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        textModel.buildText(context, 'Start Date'),
-                        const SizedBox(height: 8),
-                        DatePickerTextField(controller: _startDateController),
-                        const SizedBox(height: 16),
-                        textModel.buildText(context, 'End Date'),
-                        const SizedBox(height: 8),
-                        DatePickerTextField(controller: _endDateController),
-                        const SizedBox(height: 16),
-                        textModel.buildText(
-                            context, 'Self / Guarantee Code / Merge Code *'),
-                        const SizedBox(height: 8),
-                        SearchableDropdownExample(
-                          items: items,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedSelfCode = value;
-                            });
-                          },
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        print("Go button pressed");
+                        print("Start Date: ${_startDateController.text}");
+                        print("End Date: ${_endDateController.text}");
+                        print("Selected Code: $_selectedSelfCode");
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        elevation: 3.0,
+                      ),
+                      child: const Text("Go"),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      print("Go button pressed");
-                      print("Start Date: ${_startDateController.text}");
-                      print("End Date: ${_endDateController.text}");
-                      print("Selected Code: $_selectedSelfCode");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      elevation: 3.0,
-                    ),
-                    child: const Text("Go"),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        spreadRadius: 1,
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                print('Copy button pressed');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green[600],
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  print('Copy button pressed');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green[600],
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6.0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  textStyle: const TextStyle(fontSize: 14),
+                                  elevation: 2.0,
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                textStyle: const TextStyle(fontSize: 14),
-                                elevation: 2.0,
+                                icon: const Icon(Icons.copy, size: 18),
+                                label: const Text('Copy'),
                               ),
-                              icon: const Icon(Icons.copy, size: 18),
-                              label: const Text('Copy'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                print('CSV button pressed');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange[700],
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6.0),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  print('CSV button pressed');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange[700],
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6.0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  textStyle: const TextStyle(fontSize: 14),
+                                  elevation: 2.0,
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                textStyle: const TextStyle(fontSize: 14),
-                                elevation: 2.0,
+                                icon: const Icon(Icons.description, size: 18),
+                                label: const Text('CSV'),
                               ),
-                              icon: const Icon(Icons.description, size: 18),
-                              label: const Text('CSV'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                print('Excel button pressed');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.purple[600],
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6.0),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  print('Excel button pressed');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.purple[600],
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6.0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  textStyle: const TextStyle(fontSize: 14),
+                                  elevation: 2.0,
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                textStyle: const TextStyle(fontSize: 14),
-                                elevation: 2.0,
+                                icon: const Icon(Icons.table_chart, size: 18),
+                                label: const Text('Excel'),
                               ),
-                              icon: const Icon(Icons.table_chart, size: 18),
-                              label: const Text('Excel'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                print('PDF button pressed');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red[600],
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6.0),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  print('PDF button pressed');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[600],
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6.0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  textStyle: const TextStyle(fontSize: 14),
+                                  elevation: 2.0,
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                textStyle: const TextStyle(fontSize: 14),
-                                elevation: 2.0,
+                                icon: const Icon(Icons.picture_as_pdf, size: 18),
+                                label: const Text('PDF'),
                               ),
-                              icon: const Icon(Icons.picture_as_pdf, size: 18),
-                              label: const Text('PDF'),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: SearchableDropdownExample(
-                                items: rows,
-                                hintText: "Rows",
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: SearchableDropdownExample(
+                                  items: rows,
+                                  hintText: "Rows",
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedRowsPerPage = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: SearchField(
+                                controller: searchController,
                                 onChanged: (value) {
                                   setState(() {
-                                    _selectedRowsPerPage = value;
+                                    // Filter the displayed data based on the search term
+                                    if (value.isEmpty) {
+                                      _displayedData = dummyData;
+                                    } else {
+                                      _displayedData = dummyData.where((item) =>
+                                          item['Product'].toString().toLowerCase().contains(value.toLowerCase())
+                                      ).toList();
+                                    }
                                   });
                                 },
                               ),
                             ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: SearchField(
-                              controller: searchController,
-                              onChanged: (value) {
-                                setState(() {
-                                  // Filter the displayed data based on the search term
-                                  if (value.isEmpty) {
-                                    _displayedData = dummyData;
-                                  } else {
-                                    _displayedData = dummyData.where((item) =>
-                                        item['Product'].toString().toLowerCase().contains(value.toLowerCase())
-                                    ).toList();
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.lightBlueAccent.withOpacity(0.2)),
-                    dataRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.withOpacity(0.05)),
-                    columnSpacing: 20.0,
-                    horizontalMargin: 10.0,
-                    columns: const <DataColumn>[
-                      DataColumn(
-                          label: Text('Product',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Invoice No',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Date',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Qty',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Basic Value',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Bill Value',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Excise',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Sales Tax',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Transit Ins.',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Freight',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Servc.Tax',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Cess on Servc Tax',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(
-                          label: Text('Total Value',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                    ],
-                    rows: displayedData.map<DataRow>((data) {
-                      double totalValue =
-                          (data['Bill Value'] ?? 0) +
-                              (data['Excise'] ?? 0) +
-                              (data['Sales Tax'] ?? 0) +
-                              (data['Transit Ins.'] ?? 0) +
-                              (data['Freight'] ?? 0) +
-                              (data['Servc.Tax'] ?? 0) +
-                              (data['Cess on Servc Tax'] ?? 0);
-                      return DataRow(
-                        cells: <DataCell>[
-                          DataCell(Text(data['Product'].toString())),
-                          DataCell(Text(data['Invoice No'].toString())),
-                          DataCell(Text(data['Date'].toString())),
-                          DataCell(Text(data['Qty'].toString())),
-                          DataCell(Text(
-                              (data['Basic Value'] ?? 0.0).toStringAsFixed(2))),
-                          DataCell(Text(
-                              (data['Bill Value'] ?? 0.0).toStringAsFixed(2))),
-                          DataCell(Text(
-                              (data['Excise'] ?? 0.0).toStringAsFixed(2))),
-                          DataCell(Text(
-                              (data['Sales Tax'] ?? 0.0).toStringAsFixed(2))),
-                          DataCell(Text((data['Transit Ins.'] ?? 0.0)
-                              .toStringAsFixed(2))),
-                          DataCell(Text(
-                              (data['Freight'] ?? 0.0).toStringAsFixed(2))),
-                          DataCell(Text(
-                              (data['Servc.Tax'] ?? 0.0).toStringAsFixed(2))),
-                          DataCell(Text((data['Cess on Servc Tax'] ?? 0.0)
-                              .toStringAsFixed(2))),
-                          DataCell(Text(totalValue.toStringAsFixed(2))),
-                        ],
-                      );
-                    }).toList(),
+                  const SizedBox(height: 24),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      headingRowColor: MaterialStateColor.resolveWith(
+                              (states) => Colors.lightBlueAccent.withOpacity(0.2)),
+                      dataRowColor: MaterialStateColor.resolveWith(
+                              (states) => Colors.grey.withOpacity(0.05)),
+                      columnSpacing: 20.0,
+                      horizontalMargin: 10.0,
+                      columns: const <DataColumn>[
+                        DataColumn(
+                            label: Text('Product',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Invoice No',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Date',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Qty',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Basic Value',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Bill Value',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Excise',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Sales Tax',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Transit Ins.',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Freight',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Servc.Tax',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Cess on Servc Tax',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                            label: Text('Total Value',
+                                style: TextStyle(fontWeight: FontWeight.bold))),
+                      ],
+                      rows: displayedData.map<DataRow>((data) {
+                        double totalValue =
+                            (data['Bill Value'] ?? 0) +
+                                (data['Excise'] ?? 0) +
+                                (data['Sales Tax'] ?? 0) +
+                                (data['Transit Ins.'] ?? 0) +
+                                (data['Freight'] ?? 0) +
+                                (data['Servc.Tax'] ?? 0) +
+                                (data['Cess on Servc Tax'] ?? 0);
+                        return DataRow(
+                          cells: <DataCell>[
+                            DataCell(Text(data['Product'].toString())),
+                            DataCell(Text(data['Invoice No'].toString())),
+                            DataCell(Text(data['Date'].toString())),
+                            DataCell(Text(data['Qty'].toString())),
+                            DataCell(Text(
+                                (data['Basic Value'] ?? 0.0).toStringAsFixed(2))),
+                            DataCell(Text(
+                                (data['Bill Value'] ?? 0.0).toStringAsFixed(2))),
+                            DataCell(Text(
+                                (data['Excise'] ?? 0.0).toStringAsFixed(2))),
+                            DataCell(Text(
+                                (data['Sales Tax'] ?? 0.0).toStringAsFixed(2))),
+                            DataCell(Text((data['Transit Ins.'] ?? 0.0)
+                                .toStringAsFixed(2))),
+                            DataCell(Text(
+                                (data['Freight'] ?? 0.0).toStringAsFixed(2))),
+                            DataCell(Text(
+                                (data['Servc.Tax'] ?? 0.0).toStringAsFixed(2))),
+                            DataCell(Text((data['Cess on Servc Tax'] ?? 0.0)
+                                .toStringAsFixed(2))),
+                            DataCell(Text(totalValue.toStringAsFixed(2))),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         ),

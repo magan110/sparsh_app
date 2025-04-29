@@ -48,7 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       elevation: 2,
-
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -87,15 +86,35 @@ class _HomeScreenState extends State<HomeScreen> {
         IconButton(
           icon: const Icon(Icons.logout, size: 30, color: Colors.white),
           onPressed: () async {
-            // Get an instance of SharedPreferences
-            final prefs = await SharedPreferences.getInstance();
-            // Clear all stored data (including the 'isLoggedIn' flag)
-            await prefs.clear();
-            // Navigate back to the SplashScreen and remove all previous routes
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => SplashScreen()),
+            // Show a confirmation dialog
+            final bool? confirmLogout = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Logout'),
+                content: const Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false), // Return false when Cancel is pressed
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true), // Return true when Logout is pressed
+                    child: const Text('Logout'),
+                  ),
+                ],
+              ),
             );
+
+            // If the user confirmed the logout, proceed with clearing shared preferences and navigating
+            if (confirmLogout == true) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => SplashScreen()),
+              );
+            }
+            // If the user cancelled, do nothing.  The dialog already closed.
           },
         ),
         // --- END: Logout Button Logic ---
@@ -530,3 +549,4 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
     );
   }
 }
+

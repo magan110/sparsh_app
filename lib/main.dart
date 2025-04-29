@@ -25,6 +25,6 @@ void main() {
   // It sets up the basic app structure and starts with the SplashScreen.
   runApp(const MaterialApp(
       debugShowCheckedModeBanner:false, // Hides the debug banner
-      home:DayWiseSummary()// Sets SplashScreen as the initial screen
+      home:SplashScreen()// Sets SplashScreen as the initial screen
   ));
 }
