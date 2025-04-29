@@ -1,8 +1,8 @@
-// lib/screens/splash_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
-
-
-import 'login_screen.dart'; // Ensure this import is correct
+import 'package:learning2/screens/login_screen.dart';
+import 'package:learning2/screens/Home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 500), // Increased duration to 500 milliseconds
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
     _slideAnimation = Tween<Offset>(
@@ -31,13 +31,35 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
+    _checkLoginStatus(); // This method checks login status
+  }
 
-    // Automatically trigger the swipe up after 1 second
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted && !_showLogin) {
-        _handleSwipeUp();
-      }
-    });
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Check for the 'isLoggedIn' flag
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    // Define the duration you want the splash screen to show
+    const splashDuration = Duration(seconds: 2); // You can adjust this duration
+
+    if (isLoggedIn) {
+      // If logged in, wait for the splash duration then navigate to HomeScreen
+      Future.delayed(splashDuration, () {
+        if (mounted) { // Check if the widget is still mounted before navigating
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        }
+      });
+    } else {
+      // If not logged in, wait for the splash duration then show the LoginScreen
+      Future.delayed(splashDuration, () {
+        if (mounted && !_showLogin) { // Check if the widget is still mounted
+          _handleSwipeUp(); // This triggers showing the LoginScreen with animation
+        }
+      });
+    }
   }
 
   @override
@@ -62,8 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
       child: Scaffold(
         body: Stack(
           children: [
-            // Background image grid
-            Positioned.fill( // Make the background fill the entire stack
+            Positioned.fill(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -125,20 +146,18 @@ class _SplashScreenState extends State<SplashScreen>
                       _height * 0.2,
                       Image.asset('assets/image18.png', fit: BoxFit.contain),
                     ),
-                    const SizedBox(height: 100), // Extra space for scroll
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
             ),
-
-            // Gradient overlay
-            Positioned.fill( // Make the gradient fill the entire stack
+            Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0x80093C73), // Semi-transparent navy blue
-                      Colors.blue.shade700, // Semi-transparent light blue
+                      const Color(0x80093C73),
+                      Colors.blue.shade700,
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -146,18 +165,13 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-
-            // Centered text
-             Positioned.fill(
+            Positioned.fill(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   MediaQuery(
                     data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                    child: const Text(
-                      'Welcome',
-                      style: TextStyle(fontSize: 25,color: Colors.white),
-                    ),
+                    child: const Text('Welcome', style: TextStyle(fontSize: 25, color: Colors.white)),
                   ),
                   MediaQuery(
                     data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -174,8 +188,6 @@ class _SplashScreenState extends State<SplashScreen>
                 ],
               ),
             ),
-
-            // Footer text
             Positioned(
               bottom: 12,
               left: 0,
@@ -194,8 +206,6 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-
-            // Login screen (animated and full height)
             if (_showLogin)
               Positioned(
                 bottom: 0,

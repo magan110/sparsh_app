@@ -20,9 +20,10 @@ import 'package:learning2/screens/login_screen.dart';
 import 'package:learning2/screens/splash_screen.dart';
 
 void main() {
-  runApp(const MaterialApp(debugShowCheckedModeBanner:false,
-      home:SplashScreen()));
+  // This is the entry point of your Flutter application.
+  // It sets up the basic app structure and starts with the SplashScreen.
+  runApp(const MaterialApp(
+      debugShowCheckedModeBanner:false, // Hides the debug banner
+      home:SplashScreen() // Sets SplashScreen as the initial screen
+  ));
 }
-
-
-

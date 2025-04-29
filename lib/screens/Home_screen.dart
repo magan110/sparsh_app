@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:learning2/reports/Gerneral%20Reports/account_statement.dart';
 import 'package:learning2/screens/profile_screen.dart';
+import 'package:learning2/screens/splash_screen.dart';
 import 'package:learning2/screens/tasks_screen.dart';
 import 'package:learning2/screens/token_scan.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 import '../dsr_entry_screen/dsr_entry.dart';
 import '../reports/scheme_discount/rpl_outlet_tracker.dart';
 import 'dsr_screen.dart';
@@ -46,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       elevation: 2,
+
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -80,6 +83,22 @@ class _HomeScreenState extends State<HomeScreen> {
             print('Search tapped');
           },
         ),
+        // --- START: Logout Button Logic ---
+        IconButton(
+          icon: const Icon(Icons.logout, size: 30, color: Colors.white),
+          onPressed: () async {
+            // Get an instance of SharedPreferences
+            final prefs = await SharedPreferences.getInstance();
+            // Clear all stored data (including the 'isLoggedIn' flag)
+            await prefs.clear();
+            // Navigate back to the SplashScreen and remove all previous routes
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => SplashScreen()),
+            );
+          },
+        ),
+        // --- END: Logout Button Logic ---
       ],
     );
   }
