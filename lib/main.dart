@@ -13,6 +13,7 @@ import 'package:learning2/dsr_entry_screen/phone_call_with_builder.dart';
 import 'package:learning2/dsr_entry_screen/work_from_home.dart';
 import 'package:learning2/reports/Gerneral%20Reports/account_statement.dart';
 import 'package:learning2/reports/SAP%20Reports/day_summary.dart';
+import 'package:learning2/reports/SAP%20Reports/day_wise_summary.dart';
 import 'package:learning2/reports/Sales%20Report/sales_growth.dart';
 import 'package:learning2/reports/scheme_discount/rpl_outlet_tracker.dart';
 import 'package:learning2/screens/Home_screen.dart';
@@ -24,6 +25,6 @@ void main() {
   // It sets up the basic app structure and starts with the SplashScreen.
   runApp(const MaterialApp(
       debugShowCheckedModeBanner:false, // Hides the debug banner
-      home:SplashScreen() // Sets SplashScreen as the initial screen
+      home:DayWiseSummary()// Sets SplashScreen as the initial screen
   ));
 }
