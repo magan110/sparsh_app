@@ -35,7 +35,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
   bool _isTokenValid = false;
   int _remainingAttempts = 3;
   final List<TextEditingController> pinControllers =
-      List.generate(3, (_) => TextEditingController());
+  List.generate(3, (_) => TextEditingController());
   List<FocusNode> pinFocusNodes = List.generate(3, (_) => FocusNode());
   bool _isTorchOn = false;
 
@@ -120,7 +120,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
         _remainingAttempts--;
         if (_remainingAttempts > 0) {
           _pinValidationMessage =
-              '❌ WRONG PIN, $_remainingAttempts RETRY REMAINING';
+          '❌ WRONG PIN, $_remainingAttempts RETRY REMAINING';
         } else {
           _pinValidationMessage = '❌ WRONG PIN, 0 RETRY REMAINING';
           _isTokenValid = false;
@@ -235,7 +235,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
                           child: Focus(
                             onKeyEvent: (node, event) {
                               if (event.logicalKey ==
-                                      LogicalKeyboardKey.backspace &&
+                                  LogicalKeyboardKey.backspace &&
                                   event is KeyDownEvent &&
                                   pinControllers[index].text.isEmpty &&
                                   index > 0) {
@@ -254,7 +254,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
                               obscureText: true,
                               autofocus: index == 0,
                               decoration:
-                                  const InputDecoration(counterText: ''),
+                              const InputDecoration(counterText: ''),
                               onChanged: (value) {
                                 if (value.isNotEmpty &&
                                     index < pinControllers.length - 1) {
@@ -272,7 +272,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
                       _pinValidationMessage ?? '',
                       style: TextStyle(
                         color: _pinValidationMessage != null &&
-                                _pinValidationMessage!.contains('❌')
+                            _pinValidationMessage!.contains('❌')
                             ? Colors.red
                             : Colors.green,
                         fontWeight: FontWeight.bold,
@@ -362,22 +362,22 @@ class _TokenScanPageState extends State<TokenScanPage> {
                       borderRadius: BorderRadius.circular(12),
                       child: _cameraController != null // Use the nullable controller
                           ? MobileScanner(
-                              controller: _cameraController,
-                              onDetect: (capture) {
-                                final barcode = capture.barcodes.first;
-                                final value = barcode.rawValue;
-                                if (value != null && _scannedValue != value) {
-                                  _validateToken(value);
-                                }
-                              },
-                              onScannerStarted: (controller) {
-                                // You can use this callback if needed.
-                              },
-                            )
+                        controller: _cameraController,
+                        onDetect: (capture) {
+                          final barcode = capture.barcodes.first;
+                          final value = barcode.rawValue;
+                          if (value != null && _scannedValue != value) {
+                            _validateToken(value);
+                          }
+                        },
+                        onScannerStarted: (controller) {
+                          // You can use this callback if needed.
+                        },
+                      )
                           : const Center(
-                              child:
-                                  Text("Camera not initialized"), //show message
-                            ),
+                        child:
+                        Text("Camera not initialized"), //show message
+                      ),
                     ),
                   ),
                   Center(
@@ -587,73 +587,73 @@ class _TokenCardState extends State<TokenCard> {
               color: Colors.white,
               child: widget.isValid
                   ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('ID: ${widget.id}'),
-                        Text('Valid Upto: ${widget.date}'),
-                        Text('Value To Pay: ₹${widget.value}'),
-                        Text('Handling: ₹${widget.handling}'),
-                        Row(
-                          children: [
-                            const Text('PIN: '),
-                            Container(
-                              width: 50,
-                              height: 30,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.blue),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(widget.pin,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                          ],
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('ID: ${widget.id}'),
+                  Text('Valid Upto: ${widget.date}'),
+                  Text('Value To Pay: ₹${widget.value}'),
+                  Text('Handling: ₹${widget.handling}'),
+                  Row(
+                    children: [
+                      const Text('PIN: '),
+                      Container(
+                        width: 50,
+                        height: 30,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue),
+                          borderRadius: BorderRadius.circular(5),
                         ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'Accepted',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Error - ${widget.token}',
+                        child: Text(widget.pin,
                             style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red)),
-                        const Text(
-                          'Please check with IT or Company Officer',
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'Rejected',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(4),
                     ),
+                    child: const Text(
+                      'Accepted',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              )
+                  : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Error - ${widget.token}',
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red)),
+                  const Text(
+                    'Please check with IT or Company Officer',
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Rejected',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
