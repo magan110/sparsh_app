@@ -34,10 +34,11 @@ class _TokenScanPageState extends State<TokenScanPage> {
   String? _pinValidationMessage;
   bool _isTokenValid = false;
   int _remainingAttempts = 3;
+  final TextEditingController _pinController = TextEditingController();
+  bool _isTorchOn = false;
   final List<TextEditingController> pinControllers =
       List.generate(3, (_) => TextEditingController());
   List<FocusNode> pinFocusNodes = List.generate(3, (_) => FocusNode());
-  bool _isTorchOn = false; // Added _isTorchOn here
 
   final List<TokenCard> _predefinedCards = [
     const TokenCard(
@@ -82,29 +83,37 @@ class _TokenScanPageState extends State<TokenScanPage> {
 
   void _validateToken(String value) {
     setState(() {
-      _scannedValue = value;
-      _isTokenValid = value == 'http://en.m.wikipedia.org'; //simplified validation
+      if (value == 'http://en.m.wikipedia.org') {
+        _scannedValue = value;
+        _isTokenValid = true;
+      } else {
+        _scannedValue = value;
+        _isTokenValid = false;
+      }
     });
+    _cameraController.stop();
     _showPinDialog();
   }
 
   void _validatePin(String value) {
-    setState(() {
-      if (value == '123') {
+    if (value == '123') {
+      setState(() {
         _pinValidationMessage = '✅ OK';
-        _addScannedToken();
-      } else {
+        _addScannedToken(); // Add valid token
+      });
+    } else {
+      setState(() {
         _remainingAttempts--;
         if (_remainingAttempts > 0) {
           _pinValidationMessage =
               '❌ WRONG PIN, $_remainingAttempts RETRY REMAINING';
         } else {
           _pinValidationMessage = '❌ WRONG PIN, 0 RETRY REMAINING';
-          _isTokenValid = false;
-          _addScannedToken();
+          _isTokenValid = false; // Force token invalid on 3rd fail
+          _addScannedToken(); // Add invalid token
         }
-      }
-    });
+      });
+    }
   }
 
   void _addScannedToken() {
@@ -128,21 +137,16 @@ class _TokenScanPageState extends State<TokenScanPage> {
     setState(() {
       _scannedValue = null;
       _isTokenValid = false;
+      _pinController.clear();
       _pinValidationMessage = null;
       _remainingAttempts = 3;
-      for (var controller in pinControllers) {
-        controller.clear();
-      }
-      pinFocusNodes[0].requestFocus(); //refocus
     });
+    _cameraController.start();
   }
 
   @override
   void dispose() {
     _cameraController.dispose();
-    for (var node in pinFocusNodes) {
-      node.dispose();
-    }
     super.dispose();
   }
 
@@ -151,150 +155,164 @@ class _TokenScanPageState extends State<TokenScanPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return SingleChildScrollView(
-              child: AlertDialog(
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: _isTokenValid
-                            ? Colors.green.shade300
-                            : Colors.red.shade300,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        _isTokenValid
-                            ? "✅ Token Validated"
-                            : "❌ Token Invalid",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return SingleChildScrollView(
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black26, blurRadius: 10),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    const Text("Token No.", style: TextStyle(fontSize: 18)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 12),
-                      margin: const EdgeInsets.only(top: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        _scannedValue ?? '',
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text("Enter Pin Code :",
-                        style: TextStyle(fontSize: 18)),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(3, (index) {
-                        return Container(
-                          width: 40,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Focus(
-                            onKeyEvent: (node, event) {
-                              if (event.logicalKey ==
-                                      LogicalKeyboardKey.backspace &&
-                                  event is KeyDownEvent &&
-                                  pinControllers[index].text.isEmpty &&
-                                  index > 0) {
-                                pinControllers[index - 1].clear();
-                                FocusScope.of(context)
-                                    .requestFocus(pinFocusNodes[index - 1]);
-                              }
-                              return KeyEventResult.ignored;
-                            },
-                            child: TextField(
-                              controller: pinControllers[index],
-                              focusNode: pinFocusNodes[index],
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              maxLength: 1,
-                              obscureText: true,
-                              autofocus: index == 0,
-                              decoration:
-                                  const InputDecoration(counterText: ''),
-                              onChanged: (value) {
-                                if (value.isNotEmpty &&
-                                    index < pinControllers.length - 1) {
-                                  FocusScope.of(context)
-                                      .requestFocus(pinFocusNodes[index + 1]);
-                                }
-                              },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: _isTokenValid
+                                ? Colors.green.shade300
+                                : Colors.red.shade300,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            _isTokenValid
+                                ? "✅ Token Validated"
+                                : "❌ Token Invalid",
+                            style: TextStyle(
+                              fontSize: 16,
+                              // color: _isTokenValid ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _pinValidationMessage ?? '',
-                      style: TextStyle(
-                        color: _pinValidationMessage != null &&
-                                _pinValidationMessage!.contains('❌')
-                            ? Colors.red
-                            : Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        final pin = pinControllers.map((c) => c.text).join();
-                        if (pin.length == 3) {
-                          _validatePin(pin);
-                          if (_pinValidationMessage == '✅ OK' ||
-                              _remainingAttempts <= 0) {
-                            Navigator.pop(context);
-                            _restartScan();
-                          } else {
-                            setState(() {}); //trigger rebuild to show message
-                            for (var c in pinControllers) {
-                              c.clear();
-                            }
-                            FocusScope.of(context)
-                                .requestFocus(pinFocusNodes[0]);
-                          }
-                        } else {
-                          setState(() {
-                            _pinValidationMessage = '❌ Enter 3-digit PIN';
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
                         ),
-                        backgroundColor: Colors.blue,
-                      ),
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+                        const SizedBox(height: 12),
+                        const Text("Token No.", style: TextStyle(fontSize: 18)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 12),
+                          margin: const EdgeInsets.only(top: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _scannedValue ?? '',
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text("Enter Pin Code :",
+                            style: TextStyle(fontSize: 18)),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(3, (index) {
+                            return Container(
+                              width: 40,
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Focus(
+                                onKeyEvent: (node, event) {
+                                  if (event.logicalKey ==
+                                          LogicalKeyboardKey.backspace &&
+                                      event is KeyDownEvent &&
+                                      pinControllers[index].text.isEmpty &&
+                                      index > 0) {
+                                    pinControllers[index - 1].clear();
+                                    FocusScope.of(context)
+                                        .requestFocus(pinFocusNodes[index - 1]);
+                                  }
+                                  return KeyEventResult.ignored;
+                                },
+                                child: TextField(
+                                  controller: pinControllers[index],
+                                  focusNode: pinFocusNodes[index],
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.center,
+                                  maxLength: 1,
+                                  obscureText: true,
+                                  autofocus: index == 0,
+                                  decoration:
+                                      const InputDecoration(counterText: ''),
+                                  onChanged: (value) {
+                                    if (value.isNotEmpty &&
+                                        index < pinControllers.length - 1) {
+                                      FocusScope.of(context).requestFocus(
+                                          pinFocusNodes[index + 1]);
+                                    }
+                                  },
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _pinValidationMessage ?? '',
+                          style: TextStyle(
+                            color: _pinValidationMessage != null &&
+                                    _pinValidationMessage!.contains('❌')
+                                ? Colors.red
+                                : Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            final pin =
+                                pinControllers.map((c) => c.text).join();
+                            if (pin.length == 3) {
+                              _validatePin(pin);
+                              setState(() {});
+
+                              if (_pinValidationMessage == '✅ OK' ||
+                                  _remainingAttempts <= 0) {
+                                Navigator.pop(context);
+                                _restartScan();
+                              } else {
+                                for (var c in pinControllers) {
+                                  c.clear();
+                                }
+                                FocusScope.of(context)
+                                    .requestFocus(pinFocusNodes[0]);
+                              }
+                            } else {
+                              setState(() {
+                                _pinValidationMessage = '❌ Enter 3-digit PIN';
+                              });
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            backgroundColor: Colors.blue,
+                          ),
+                          child: const Text(
+                            "Submit",
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
@@ -344,9 +362,6 @@ class _TokenScanPageState extends State<TokenScanPage> {
                             _validateToken(value);
                           }
                         },
-                        onScannerStarted: (controller) {
-                          // You can use this callback if needed.
-                        },
                       ),
                     ),
                   ),
@@ -376,19 +391,8 @@ class _TokenScanPageState extends State<TokenScanPage> {
                             color: Colors.black,
                           ),
                           onPressed: () {
-                            _cameraController.toggleTorch().then((_) {
-                              setState(() {
-                                _isTorchOn = !_isTorchOn;
-                              });
-                            }).catchError((error) {
-                              // Handle error, e.g., show a snackbar
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error toggling torch: $error'),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            });
+                            setState(() => _isTorchOn = !_isTorchOn);
+                            _cameraController.toggleTorch();
                           },
                         ),
                       ),
@@ -398,7 +402,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Scan a token',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -627,4 +631,3 @@ class _TokenCardState extends State<TokenCard> {
     );
   }
 }
-
