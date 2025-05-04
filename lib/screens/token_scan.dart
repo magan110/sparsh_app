@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:learning2/screens/Home_screen.dart';
 import 'package:learning2/screens/token_details.dart';
 import 'package:learning2/screens/token_summary.dart';
@@ -103,12 +106,50 @@ class _TokenScanPageState extends State<TokenScanPage> {
     }
   }
 
-  void _validateToken(String value) {
+  void _validateToken(String value) async {
     setState(() {
       _scannedValue = value;
-      _isTokenValid = value == 'http://en.m.wikipedia.org'; //simplified validation
-      _addScannedToken();
     });
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://qa.birlawhite.com:55232/api/TokenScan/scan'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'tokenNum': value}),
+      );
+
+      if (response.statusCode == 200) {
+        // Treat the response body as plain text
+        final responseBody = response.body;
+        print('Response: $responseBody');
+
+        // Simplified validation based on plain text response
+        if (responseBody.contains('success')) {
+          setState(() {
+            _isTokenValid = true;
+            _addScannedToken(); // Add token to the list
+          });
+        } else {
+          setState(() {
+            _isTokenValid = false;
+          });
+        }
+      } else {
+        print('Failed to validate token. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        setState(() {
+          _isTokenValid = false;
+        });
+      }
+    } catch (e) {
+      print('Error during token validation: $e');
+      setState(() {
+        _isTokenValid = false;
+      });
+    }
+
     _showPinDialog();
   }
 
@@ -660,4 +701,3 @@ class _TokenCardState extends State<TokenCard> {
     );
   }
 }
-
