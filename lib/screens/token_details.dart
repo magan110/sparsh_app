@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-// Import for the HttpOverrides
-import 'package:learning2/main.dart'; // Import your main.dart where MyHttpOverrides is defined
+// Replace these with your actual imports
+import 'package:learning2/screens/token_report.dart';
+import 'package:learning2/screens/token_summary.dart';
 
 class TokenDetailsPage extends StatefulWidget {
   final String activeTab;
@@ -51,7 +51,6 @@ class _TokenDetailsPageState extends State<TokenDetailsPage> {
           tokenResults.add({'token': token, 'isValid': false});
         }
       } catch (e) {
-        print('Error fetching token $token: $e'); // Log the error
         tokenResults.add({'token': token, 'isValid': false});
       }
     }
@@ -82,7 +81,7 @@ class _TokenDetailsPageState extends State<TokenDetailsPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return  Center(child: Text("Error fetching tokens: ${snapshot.error}")); // Display the error
+                  return Center(child: Text("Error fetching tokens: ${snapshot.error}"));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text("No token data found."));
                 }
@@ -117,12 +116,24 @@ class _TokenDetailsPageState extends State<TokenDetailsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _navItem(context, 'Details', activeTab == 'Details',
-                const TokenDetailsPage(activeTab: 'Details')),
-            _navItem(context, 'Report', activeTab == 'Report',
-                const Placeholder()), // Replace with TokenReportScreen
-            _navItem(context, 'Summary', activeTab == 'Summary',
-                const Placeholder()), // Replace with TokenSummaryScreen
+            _navItem(
+              context,
+              'Details',
+              activeTab == 'Details',
+              const TokenDetailsPage(activeTab: 'Details'),
+            ),
+            _navItem(
+              context,
+              'Report',
+              activeTab == 'Report',
+              const TokenReportScreen(activeTab: 'Report'),
+            ),
+            _navItem(
+              context,
+              'Summary',
+              activeTab == 'Summary',
+              const TokenSummaryScreen(activeTab: 'Summary'),
+            ),
           ],
         ),
       ),
@@ -134,7 +145,9 @@ class _TokenDetailsPageState extends State<TokenDetailsPage> {
       onTap: () {
         if (!isActive) {
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_) => targetPage));
+            context,
+            MaterialPageRoute(builder: (_) => targetPage),
+          );
         }
       },
       child: Container(
@@ -183,7 +196,9 @@ class _TokenDetailsPageState extends State<TokenDetailsPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(10.0),
             color: Colors.white,
-            child: isValid ? _buildValidDetails(tokenData) : _buildErrorCard(tokenData['token']),
+            child: isValid
+                ? _buildValidDetails(tokenData)
+                : _buildErrorCard(tokenData['token']),
           ),
         ],
       ),

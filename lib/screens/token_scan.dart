@@ -1,16 +1,12 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:learning2/screens/Home_screen.dart';
 import 'package:learning2/screens/token_details.dart';
 import 'package:learning2/screens/token_summary.dart';
+import 'package:learning2/screens/token_summary_model.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
-void main() {
-  runApp(const TokenScanApp());
-}
 
 class TokenScanApp extends StatelessWidget {
   const TokenScanApp({super.key});
@@ -41,45 +37,6 @@ class _TokenScanPageState extends State<TokenScanPage> {
   List.generate(3, (_) => TextEditingController());
   List<FocusNode> pinFocusNodes = List.generate(3, (_) => FocusNode());
   bool _isTorchOn = false;
-
-  final List<TokenCard> _predefinedCards = [
-    const TokenCard(
-      token: '08WX1NDVTPKB',
-      id: '112473052',
-      date: '12 Jan 2026',
-      value: '35',
-      handling: '3.50',
-      isValid: true,
-      pin: '256',
-    ),
-    const TokenCard(
-      token: '15TY8BGFWCNH',
-      id: '112425634',
-      date: '12 Jan 2026',
-      value: '35',
-      handling: '3.50',
-      isValid: true,
-      pin: '123',
-    ),
-    const TokenCard(
-      token: 'XTR9PU5RXT00',
-      id: '',
-      date: '',
-      value: '',
-      handling: '',
-      isValid: false,
-      pin: '',
-    ),
-    const TokenCard(
-      token: '15TY8BGFWCNH',
-      id: '112425634',
-      date: '12 Jan 2026',
-      value: '35',
-      handling: '3.50',
-      isValid: true,
-      pin: '123',
-    ),
-  ];
 
   List<TokenCard> _attemptedCards = [];
   String? _apiAutoPin;
@@ -113,7 +70,6 @@ class _TokenScanPageState extends State<TokenScanPage> {
       _showMaxAttemptsError = false;
     });
 
-    // Attempt to autofill PIN via API POST. If API doesn't support this, user will still be able to enter PIN.
     try {
       final response = await http.post(
         Uri.parse('https://qa.birlawhite.com:55232/api/TokenValidate/validate'),
@@ -132,7 +88,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
         }
       }
     } catch (_) {
-      // If autofill fails, do nothing, manual entry will be allowed
+      // Ignore
     }
 
     _showPinDialog();
@@ -210,6 +166,14 @@ class _TokenScanPageState extends State<TokenScanPage> {
         ),
       );
     });
+
+    // Update summary model
+    final summary = TokenSummaryModel();
+    summary.addScan(
+      isValid: isValid,
+      value: isValid ? 35 : 0, tokenDetail: {},
+      // Optionally, you can add logic for isExpired/isAlreadyScanned if you have that info
+    );
   }
 
   void _restartScan() {
@@ -524,11 +488,12 @@ class _TokenScanPageState extends State<TokenScanPage> {
                       padding: EdgeInsets.symmetric(vertical: 6),
                       child: Text(
                         "Token/PIN Attempts:",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
                   ..._attemptedCards,
-                  ..._predefinedCards,
+
                 ],
               ),
             ),

@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:learning2/screens/token_details.dart';
-import 'package:learning2/screens/token_report.dart';
+import 'package:learning2/screens/token_summary_model.dart';
 
-
-
-class TokenSummaryScreen extends StatelessWidget {
+class TokenSummaryScreen extends StatefulWidget {
   final String activeTab;
   const TokenSummaryScreen({super.key, this.activeTab = 'Summary'});
 
   @override
+  State<TokenSummaryScreen> createState() => _TokenSummaryScreenState();
+}
+
+class _TokenSummaryScreenState extends State<TokenSummaryScreen> {
+  late TokenSummaryModel summary;
+
+  @override
+  void initState() {
+    super.initState();
+    summary = TokenSummaryModel();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Re-fetch the summary so it reflects changes
+    summary = TokenSummaryModel();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -21,13 +35,12 @@ class TokenSummaryScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          _buildTopNav(context, activeTab),
+          _buildTopNav(context, widget.activeTab),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
               child: Column(
                 children: [
-                  // Dynamic Summary Table
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -39,7 +52,6 @@ class TokenSummaryScreen extends StatelessWidget {
                     child: _buildSummaryTable(),
                   ),
                   const SizedBox(height: 40),
-                  // Buttons for Close and Save
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -59,15 +71,13 @@ class TokenSummaryScreen extends StatelessWidget {
     );
   }
 
-  // Table Row for displaying summary data dynamically
   TableRow _buildTableRow(String label, String value, Color valueColor) {
     return TableRow(
       children: [
         Padding(
           padding: const EdgeInsets.all(12.0),
           child: Text(label,
-              style:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         ),
         Padding(
           padding: const EdgeInsets.all(12.0),
@@ -83,31 +93,20 @@ class TokenSummaryScreen extends StatelessWidget {
     );
   }
 
-  // Dynamic Summary Table
   Widget _buildSummaryTable() {
-    // Simulating dynamic data
-    List<Map<String, String>> summaryData = [
-      {'label': 'Total Scan', 'value': '3', 'color': 'blue'},
-      {'label': 'Valid Scan', 'value': '2', 'color': 'green'},
-      {'label': 'Expired Scan', 'value': '0', 'color': 'green'},
-      {'label': 'Already Scanned', 'value': '0', 'color': 'green'},
-      {'label': 'Invalid Scan', 'value': '1', 'color': 'red'},
-      {'label': 'Total Amount', 'value': '77', 'color': 'black'},
-    ];
-
     return Table(
       border: TableBorder.all(color: Colors.grey.shade400),
-      children: summaryData.map((data) {
-        Color valueColor = data['color'] == 'blue'
-            ? Colors.blue
-            : (data['color'] == 'green' ? Colors.green : Colors.red);
-
-        return _buildTableRow(data['label']!, data['value']!, valueColor);
-      }).toList(),
+      children: [
+        _buildTableRow('Total Scan', summary.totalScan.toString(), Colors.blue),
+        _buildTableRow('Valid Scan', summary.validScan.toString(), Colors.green),
+        _buildTableRow('Expired Scan', summary.expiredScan.toString(), Colors.orange),
+        _buildTableRow('Already Scanned', summary.alreadyScanned.toString(), Colors.deepPurple),
+        _buildTableRow('Invalid Scan', summary.invalidScan.toString(), Colors.red),
+        _buildTableRow('Total Amount', summary.totalAmount.toString(), Colors.black),
+      ],
     );
   }
 
-  // Button builder with icon
   Widget _buildButton(
       String text, Color bgColor, Color textColor, VoidCallback onPressed) {
     return ElevatedButton.icon(
@@ -125,7 +124,6 @@ class TokenSummaryScreen extends StatelessWidget {
     );
   }
 
-  // Top navigation bar with tabs for switching between screens
   Widget _buildTopNav(BuildContext context, String activeTab) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -143,8 +141,6 @@ class TokenSummaryScreen extends StatelessWidget {
           children: [
             _navItem(context, 'Details', activeTab == 'Details',
                 const TokenDetailsPage(activeTab: 'Details')),
-            _navItem(context, 'Report', activeTab == 'Report',
-                const TokenReportScreen(activeTab: 'Report')),
             _navItem(context, 'Summary', activeTab == 'Summary',
                 const TokenSummaryScreen(activeTab: 'Summary')),
           ],
@@ -153,7 +149,6 @@ class TokenSummaryScreen extends StatelessWidget {
     );
   }
 
-  // Navigation item for switching between tabs
   Widget _navItem(
       BuildContext context, String label, bool isActive, Widget targetPage) {
     return GestureDetector(
