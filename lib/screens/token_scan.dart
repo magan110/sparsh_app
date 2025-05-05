@@ -32,7 +32,7 @@ class TokenScanPage extends StatefulWidget {
 }
 
 class _TokenScanPageState extends State<TokenScanPage> {
-  MobileScannerController? _cameraController; // Make it nullable
+  MobileScannerController? _cameraController;
   String? _scannedValue;
   String? _pinValidationMessage;
   bool _isTokenValid = false;
@@ -81,112 +81,134 @@ class _TokenScanPageState extends State<TokenScanPage> {
     ),
   ];
 
-  List<TokenCard> _scannedCards = [];
+  List<TokenCard> _attemptedCards = [];
+  String? _apiAutoPin;
+  bool _showMaxAttemptsError = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeCamera(); // Initialize camera in initState
+    _initializeCamera();
   }
 
   Future<void> _initializeCamera() async {
     try {
       _cameraController = MobileScannerController();
-      await _cameraController?.start(); // Start the camera
+      await _cameraController?.start();
     } catch (e) {
-      print("Error initializing camera: $e");
-      // Show an error message to the user
-      if (mounted) { //check the context
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to initialize camera: $e')),
-        );
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Failed to initialize camera: $e')));
       }
-      // Consider showing a dialog or navigating to a different screen
-      // to handle the error more gracefully.
     }
   }
 
   void _validateToken(String value) async {
     setState(() {
       _scannedValue = value;
+      _isTokenValid = false;
+      _pinValidationMessage = null;
+      _remainingAttempts = 3;
+      _apiAutoPin = null;
+      _showMaxAttemptsError = false;
     });
 
+    // Attempt to autofill PIN via API POST. If API doesn't support this, user will still be able to enter PIN.
     try {
       final response = await http.post(
-        Uri.parse('https://qa.birlawhite.com:55232/api/TokenScan/scan'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'tokenNum': value}),
+        Uri.parse('https://qa.birlawhite.com:55232/api/TokenValidate/validate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'tokenNum': value,
+          'tokenCvv': '',
+        }),
       );
-
       if (response.statusCode == 200) {
-        // Treat the response body as plain text
-        final responseBody = response.body;
-        print('Response: $responseBody');
-
-        // Simplified validation based on plain text response
-        if (responseBody.contains('success')) {
+        final data = jsonDecode(response.body);
+        if (data is Map<String, dynamic> && data.containsKey('tokenCvv')) {
           setState(() {
-            _isTokenValid = true;
-            _addScannedToken(); // Add token to the list
-          });
-        } else {
-          setState(() {
-            _isTokenValid = false;
+            _apiAutoPin = data['tokenCvv']?.toString();
           });
         }
-      } else {
-        print('Failed to validate token. Status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
-        setState(() {
-          _isTokenValid = false;
-        });
       }
-    } catch (e) {
-      print('Error during token validation: $e');
-      setState(() {
-        _isTokenValid = false;
-      });
+    } catch (_) {
+      // If autofill fails, do nothing, manual entry will be allowed
     }
 
     _showPinDialog();
   }
 
-  void _validatePin(String value) {
-    setState(() {
-      if (value == '123') {
-        _pinValidationMessage = '✅ OK';
-      } else {
-        _remainingAttempts--;
-        if (_remainingAttempts > 0) {
-          _pinValidationMessage =
-          '❌ WRONG PIN, $_remainingAttempts RETRY REMAINING';
+  Future<void> _validatePin(String value) async {
+    if (_remainingAttempts <= 0) {
+      setState(() {
+        _showMaxAttemptsError = true;
+      });
+      return;
+    }
+    final tokenNum = _scannedValue;
+    try {
+      final response = await http.post(
+        Uri.parse('https://qa.birlawhite.com:55232/api/TokenValidate/validate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'tokenNum': tokenNum, 'tokenCvv': value}),
+      );
+      setState(() {
+        if (response.statusCode == 200 &&
+            response.body.contains('Validate Successfully')) {
+          _pinValidationMessage = '✅ PIN $value is Correct!';
+          _isTokenValid = true;
+          _addAttemptedToken(value, true);
+          Future.delayed(const Duration(milliseconds: 800), () {
+            if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+            _restartScan();
+          });
         } else {
-          _pinValidationMessage = '❌ WRONG PIN, 0 RETRY REMAINING';
-          _isTokenValid = false;
+          _remainingAttempts--;
+          _pinValidationMessage =
+          '❌ PIN $value is Incorrect. $_remainingAttempts attempts left.';
+          _addAttemptedToken(value, false);
+          if (_remainingAttempts <= 0) {
+            _isTokenValid = false;
+            _showMaxAttemptsError = true;
+            Future.delayed(const Duration(milliseconds: 900), () {
+              if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+              _showMaxRetryDialog();
+            });
+          }
         }
-      }
-    });
+      });
+    } catch (e) {
+      setState(() {
+        _remainingAttempts--;
+        _pinValidationMessage =
+        '❌ Error. $_remainingAttempts attempts left.';
+        _addAttemptedToken(value, false);
+        if (_remainingAttempts <= 0) {
+          _isTokenValid = false;
+          _showMaxAttemptsError = true;
+          Future.delayed(const Duration(milliseconds: 900), () {
+            if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+            _showMaxRetryDialog();
+          });
+        }
+      });
+    }
   }
 
-  void _addScannedToken() {
+  void _addAttemptedToken(String enteredPin, bool isValid) {
     setState(() {
-      // Check if the token already exists in the scanned list.
-      if (!_scannedCards.any((card) => card.token == _scannedValue)) {
-        _scannedCards.insert(
-          0,
-          TokenCard(
-            token: _scannedValue ?? '',
-            id: _isTokenValid ? '112473052' : '',
-            date: _isTokenValid ? '12 Jan 2026' : '',
-            value: _isTokenValid ? '35' : '',
-            handling: _isTokenValid ? '3.50' : '',
-            isValid: _isTokenValid,
-            pin: _isTokenValid ? '123' : '',
-          ),
-        );
-      }
+      _attemptedCards.insert(
+        0,
+        TokenCard(
+          token: _scannedValue ?? '',
+          id: isValid ? '112473052' : '',
+          date: isValid ? '12 Jan 2026' : '',
+          value: isValid ? '35' : '',
+          handling: isValid ? '3.50' : '',
+          isValid: isValid,
+          pin: enteredPin,
+        ),
+      );
     });
   }
 
@@ -196,6 +218,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
       _isTokenValid = false;
       _pinValidationMessage = null;
       _remainingAttempts = 3;
+      _showMaxAttemptsError = false;
       for (var controller in pinControllers) {
         controller.clear();
       }
@@ -205,20 +228,45 @@ class _TokenScanPageState extends State<TokenScanPage> {
 
   @override
   void dispose() {
-    _cameraController?.dispose(); //safely dispose
+    _cameraController?.dispose();
     for (var node in pinFocusNodes) {
       node.dispose();
     }
     super.dispose();
   }
 
+  void _showMaxRetryDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Max Attempts Reached'),
+        content: const Text('You have entered wrong PIN 3 times.\nPlease contact IT or Company Officer.'),
+        actions: [
+          TextButton(
+            child: const Text("OK"),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _restartScan();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
   void _showPinDialog() {
+    String autoPin = (_apiAutoPin ?? '').trim();
+    for (int i = 0; i < 3; i++) {
+      pinControllers[i].text = (autoPin.length == 3) ? autoPin[i] : '';
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (context, setStateInner) {
             return SingleChildScrollView(
               child: AlertDialog(
                 backgroundColor: Colors.white,
@@ -232,16 +280,12 @@ class _TokenScanPageState extends State<TokenScanPage> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 6, horizontal: 12),
                       decoration: BoxDecoration(
-                        color: _isTokenValid
-                            ? Colors.green.shade300
-                            : Colors.red.shade300,
+                        color: Colors.blue.shade300,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
-                        _isTokenValid
-                            ? "✅ Token Validated"
-                            : "❌ Token Invalid",
-                        style: const TextStyle(
+                      child: const Text(
+                        "Enter PIN to Validate Token",
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -284,6 +328,15 @@ class _TokenScanPageState extends State<TokenScanPage> {
                                 FocusScope.of(context)
                                     .requestFocus(pinFocusNodes[index - 1]);
                               }
+                              if (event is KeyDownEvent &&
+                                  event.character != null &&
+                                  RegExp(r'\d').hasMatch(event.character!)) {
+                                if (pinControllers[index].text.isNotEmpty &&
+                                    index < pinControllers.length - 1) {
+                                  FocusScope.of(context)
+                                      .requestFocus(pinFocusNodes[index + 1]);
+                                }
+                              }
                               return KeyEventResult.ignored;
                             },
                             child: TextField(
@@ -292,15 +345,26 @@ class _TokenScanPageState extends State<TokenScanPage> {
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
                               maxLength: 1,
-                              obscureText: true,
+                              obscureText: false,
                               autofocus: index == 0,
+                              enabled: !_showMaxAttemptsError,
                               decoration:
                               const InputDecoration(counterText: ''),
-                              onChanged: (value) {
+                              onChanged: (value) async {
                                 if (value.isNotEmpty &&
                                     index < pinControllers.length - 1) {
                                   FocusScope.of(context)
                                       .requestFocus(pinFocusNodes[index + 1]);
+                                }
+                                String pin =
+                                pinControllers.map((c) => c.text).join();
+                                if (pin.length == 3 &&
+                                    pinControllers.every((c) =>
+                                    c.text.isNotEmpty &&
+                                        RegExp(r'\d').hasMatch(c.text))) {
+                                  FocusScope.of(context).unfocus();
+                                  await _validatePin(pin);
+                                  setStateInner(() {});
                                 }
                               },
                             ),
@@ -309,53 +373,23 @@ class _TokenScanPageState extends State<TokenScanPage> {
                       }),
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      _pinValidationMessage ?? '',
-                      style: TextStyle(
-                        color: _pinValidationMessage != null &&
-                            _pinValidationMessage!.contains('❌')
-                            ? Colors.red
-                            : Colors.green,
-                        fontWeight: FontWeight.bold,
+                    if (_showMaxAttemptsError)
+                      const Text(
+                        "❌ You have reached the maximum attempts.",
+                        style: TextStyle(
+                            color: Colors.red, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        final pin = pinControllers.map((c) => c.text).join();
-                        if (pin.length == 3) {
-                          _validatePin(pin);
-                          if (_pinValidationMessage == '✅ OK' ||
-                              _remainingAttempts <= 0) {
-                            Navigator.pop(context);
-                            _restartScan();
-                          } else {
-                            setState(() {});
-                            for (var c in pinControllers) {
-                              c.clear();
-                            }
-                            FocusScope.of(context)
-                                .requestFocus(pinFocusNodes[0]);
-                          }
-                        } else {
-                          setState(() {
-                            _pinValidationMessage = '❌ Enter 3-digit PIN';
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
+                    if (_pinValidationMessage != null && !_showMaxAttemptsError)
+                      Text(
+                        _pinValidationMessage ?? '',
+                        style: TextStyle(
+                          color: _pinValidationMessage != null &&
+                              _pinValidationMessage!.contains('❌')
+                              ? Colors.red
+                              : Colors.green,
+                          fontWeight: FontWeight.bold,
                         ),
-                        backgroundColor: Colors.blue,
                       ),
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -401,7 +435,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: _cameraController != null // Use the nullable controller
+                      child: _cameraController != null
                           ? MobileScanner(
                         controller: _cameraController,
                         onDetect: (capture) {
@@ -411,13 +445,10 @@ class _TokenScanPageState extends State<TokenScanPage> {
                             _validateToken(value);
                           }
                         },
-                        onScannerStarted: (controller) {
-                          // You can use this callback if needed.
-                        },
+                        onScannerStarted: (controller) {},
                       )
                           : const Center(
-                        child:
-                        Text("Camera not initialized"), //show message
+                        child: Text("Camera not initialized"),
                       ),
                     ),
                   ),
@@ -447,12 +478,11 @@ class _TokenScanPageState extends State<TokenScanPage> {
                             color: Colors.black,
                           ),
                           onPressed: () {
-                            _cameraController?.toggleTorch().then((_) { //use null safe
+                            _cameraController?.toggleTorch().then((_) {
                               setState(() {
                                 _isTorchOn = !_isTorchOn;
                               });
                             }).catchError((error) {
-                              // Handle error, e.g., show a snackbar
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -487,15 +517,19 @@ class _TokenScanPageState extends State<TokenScanPage> {
             _buildTopNav(context, 'Details'),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                itemCount: _scannedCards.length + _predefinedCards.length,
-                itemBuilder: (context, index) {
-                  if (index < _scannedCards.length) {
-                    return _scannedCards[index];
-                  } else {
-                    return _predefinedCards[index - _scannedCards.length];
-                  }
-                },
+              child: ListView(
+                children: [
+                  if (_attemptedCards.isNotEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        "Token/PIN Attempts:",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                  ..._attemptedCards,
+                  ..._predefinedCards,
+                ],
               ),
             ),
           ],
@@ -679,6 +713,24 @@ class _TokenCardState extends State<TokenCard> {
                     style: TextStyle(
                       fontSize: 16,
                     ),
+                  ),
+                  Row(
+                    children: [
+                      const Text('Tried PIN: '),
+                      Container(
+                        width: 50,
+                        height: 30,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.red),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(widget.pin,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red)),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Container(

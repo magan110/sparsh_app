@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:learning2/reports/SAP%20Reports/day_wise_summary.dart';
+
+import '../reports/Gerneral Reports/account_statement.dart';
+import '../reports/SAP Reports/day_summary.dart';
+import '../reports/Sales Report/sales_growth.dart';
 
 // Define a callback type for when a drawer item is tapped
 typedef DrawerItemTapCallback = void Function(String title, String? route);
@@ -1661,11 +1666,22 @@ class _AppDrawerState extends State<AppDrawer> {
     return sapReportsSubItems.map((item) {
       return InkWell(
         onTap: () {
-          // TODO: Implement navigation logic for sub-sub-items
+          //  Implement navigation logic for sub-sub-items
           print('${item['label']} tapped. Navigate to ${item['route']}');
-          // Close the drawer after tapping a sub-sub-item
+          //  Close the drawer after tapping a sub-sub-item
           Navigator.pop(context);
           // Add your navigation logic here (e.g., Navigator.push)
+          if (item['route'] == 'day_summary') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DaySummary()), // Assuming DaySummary is the name of your widget/screen
+            );
+          }
+          if(item['route'] == 'Day Wise Details'){
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DayWiseSummary()));
+          }
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjust padding for sub-sub-items
@@ -1684,6 +1700,7 @@ class _AppDrawerState extends State<AppDrawer> {
     }).toList();
   }
 
+
   // Helper to build the nested items under General Reports
   List<Widget> _buildGeneralReportsSubItems() {
     final List<Map<String, String>> generalReportsSubItems = [
@@ -1701,6 +1718,11 @@ class _AppDrawerState extends State<AppDrawer> {
           // Close the drawer after tapping a sub-sub-item
           Navigator.pop(context);
           // Add your navigation logic here (e.g., Navigator.push)
+          if(item['route'] == 'accounts_statement'){
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AccountStatement()));
+          }
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjust padding for sub-sub-items
@@ -1766,6 +1788,11 @@ class _AppDrawerState extends State<AppDrawer> {
           // Close the drawer after tapping a sub-sub-item
           Navigator.pop(context);
           // Add your navigation logic here (e.g., Navigator.push)
+          if(item['route'] == 'sales_growth_overview'){
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SalesGrowth()));
+          }
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjust padding for sub-sub-items

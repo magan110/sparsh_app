@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:learning2/dsr_entry_screen/Meeting_with_new_purchaser.dart';
 import 'package:learning2/dsr_entry_screen/Meetings_With_Contractor.dart';
@@ -20,11 +22,26 @@ import 'package:learning2/screens/Home_screen.dart';
 import 'package:learning2/screens/login_screen.dart';
 import 'package:learning2/screens/splash_screen.dart';
 
+import 'dart:io'; // Import the dart:io library, which is necessary for HttpClient and HttpOverrides.
+import 'package:flutter/material.dart'; // Import the Flutter material library.
+
 void main() {
   // This is the entry point of your Flutter application.
+  HttpOverrides.global = MyHttpOverrides();
   // It sets up the basic app structure and starts with the SplashScreen.
   runApp(const MaterialApp(
-      debugShowCheckedModeBanner:false, // Hides the debug banner
-      home:SplashScreen()// Sets SplashScreen as the initial screen
+      debugShowCheckedModeBanner: false,
+      home: SplashScreen() // Sets SplashScreen as the initial screen
   ));
 }
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    // Override the createHttpClient method to customize HTTP client behavior.
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) =>
+      true; // This is the crucial part: it accepts *any* certificate.
+  }
+}
+

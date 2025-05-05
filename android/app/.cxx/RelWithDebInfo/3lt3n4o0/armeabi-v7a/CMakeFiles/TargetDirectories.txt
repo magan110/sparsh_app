@@ -1,0 +1,2 @@
+C:/Users/MAGAN/Desktop/SparshApp/sparsh_app25/android/app/.cxx/RelWithDebInfo/3lt3n4o0/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/MAGAN/Desktop/SparshApp/sparsh_app25/android/app/.cxx/RelWithDebInfo/3lt3n4o0/armeabi-v7a/CMakeFiles/rebuild_cache.dir

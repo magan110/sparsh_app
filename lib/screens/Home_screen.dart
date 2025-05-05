@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:learning2/reports/Gerneral%20Reports/account_statement.dart';
 import 'package:learning2/screens/profile_screen.dart';
+
 import 'package:learning2/screens/splash_screen.dart';
 import 'package:learning2/screens/tasks_screen.dart';
 import 'package:learning2/screens/token_scan.dart';
@@ -11,6 +13,7 @@ import '../reports/scheme_discount/rpl_outlet_tracker.dart';
 import 'dsr_screen.dart';
 import 'mail_screen.dart';
 import 'app_drawer.dart'; // <<< ADD THIS IMPORT
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -414,7 +417,7 @@ class _HomeContentState extends State<HomeContent> {
               if (item['route'] == 'dsr') {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const DsrEntry()));
               } else if (item['route'] == 'scanner') {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TokenScanApp()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => TokenScanPage()));
               }
             },
             child: _buildMostlyUsedAppItem(item['image']!, item['label']!),

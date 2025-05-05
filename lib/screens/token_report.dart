@@ -7,6 +7,7 @@ import 'package:learning2/screens/token_summary.dart';
 class TokenReportScreen extends StatefulWidget {
   final String activeTab;
   const TokenReportScreen({super.key, this.activeTab = 'Report'});
+
   @override
   _TokenReportScreenState createState() => _TokenReportScreenState();
 }
@@ -17,7 +18,7 @@ class _TokenReportScreenState extends State<TokenReportScreen> {
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     DateTime initialDate =
-        isStartDate ? startDate ?? DateTime.now() : endDate ?? DateTime.now();
+    isStartDate ? startDate ?? DateTime.now() : endDate ?? DateTime.now();
     DateTime firstDate = DateTime(2020);
     DateTime lastDate = DateTime(2030);
 
@@ -62,7 +63,7 @@ class _TokenReportScreenState extends State<TokenReportScreen> {
                     child: Text(
                       "Token Scan Details Confidential",
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                   SizedBox(height: 12),
@@ -102,7 +103,7 @@ class _TokenReportScreenState extends State<TokenReportScreen> {
                                         child: Text(
                                           startDate != null
                                               ? DateFormat("dd/MM/yyyy")
-                                                  .format(startDate!)
+                                              .format(startDate!)
                                               : "Select Date",
                                           style: TextStyle(
                                               color: Colors.black,
@@ -137,7 +138,7 @@ class _TokenReportScreenState extends State<TokenReportScreen> {
                                         child: Text(
                                           endDate != null
                                               ? DateFormat("dd/MM/yyyy")
-                                                  .format(endDate!)
+                                              .format(endDate!)
                                               : "Select Date",
                                           style: TextStyle(
                                               color: Colors.black,
@@ -160,7 +161,15 @@ class _TokenReportScreenState extends State<TokenReportScreen> {
                             // Check Now Button
                             ElevatedButton(
                               onPressed: () {
-                                // TODO: Implement check logic
+                                if (startDate != null && endDate != null) {
+                                  // Fetch and filter data based on the date range
+                                  print("Checking data from ${DateFormat("dd/MM/yyyy").format(startDate!)} to ${DateFormat("dd/MM/yyyy").format(endDate!)}");
+                                } else {
+                                  // Show a message if the dates are not selected
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Please select both start and end date")),
+                                  );
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
@@ -244,10 +253,10 @@ class _TokenReportScreenState extends State<TokenReportScreen> {
                       ),
                       child: Padding(
                         padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         child: Text("Close",
                             style:
-                                TextStyle(color: Colors.white, fontSize: 16)),
+                            TextStyle(color: Colors.white, fontSize: 16)),
                       ),
                     ),
                   ),
@@ -299,7 +308,7 @@ class _TokenReportScreenState extends State<TokenReportScreen> {
       },
       child: Container(
         padding:
-            EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Add padding
+        EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Add padding
         decoration: BoxDecoration(
           color: isActive
               ? Color.fromRGBO(0, 112, 183, 1)
