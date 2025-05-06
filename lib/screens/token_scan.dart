@@ -1,28 +1,14 @@
+// Main token scan and validation page, with live API detail fetch for cards!
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:learning2/screens/Home_screen.dart';
-import 'package:learning2/screens/token_details.dart';
-import 'package:learning2/screens/token_summary.dart';
-import 'package:learning2/screens/token_summary_model.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
-class TokenScanApp extends StatelessWidget {
-  const TokenScanApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const TokenScanPage(),
-    );
-  }
-}
+import 'token_summary_model.dart';
+import 'token_details.dart';
+import 'token_summary.dart';
 
 class TokenScanPage extends StatefulWidget {
   const TokenScanPage({super.key});
-
   @override
   State<TokenScanPage> createState() => _TokenScanPageState();
 }
@@ -45,19 +31,8 @@ class _TokenScanPageState extends State<TokenScanPage> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    try {
-      _cameraController = MobileScannerController();
-      await _cameraController?.start();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Failed to initialize camera: $e')));
-      }
-    }
+    _cameraController = MobileScannerController();
+    _cameraController?.start();
   }
 
   void _validateToken(String value) async {
@@ -87,10 +62,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
           });
         }
       }
-    } catch (_) {
-      // Ignore
-    }
-
+    } catch (_) {}
     _showPinDialog();
   }
 
@@ -108,21 +80,32 @@ class _TokenScanPageState extends State<TokenScanPage> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'tokenNum': tokenNum, 'tokenCvv': value}),
       );
-      setState(() {
-        if (response.statusCode == 200 &&
-            response.body.contains('Validate Successfully')) {
+      if (response.statusCode == 200 &&
+          response.body.contains('Validate Successfully')) {
+        // Fetch actual token details from scan API
+        final scanResponse = await http.post(
+            Uri.parse('https://qa.birlawhite.com:55232/api/TokenScan/scan'),
+            body: {'token': tokenNum}
+        );
+        Map<String, dynamic> detail = {};
+        if (scanResponse.statusCode == 200) {
+          detail = jsonDecode(scanResponse.body);
+        }
+        setState(() {
           _pinValidationMessage = '✅ PIN $value is Correct!';
           _isTokenValid = true;
-          _addAttemptedToken(value, true);
+          _addAttemptedToken(value, true, detail);
           Future.delayed(const Duration(milliseconds: 800), () {
             if (Navigator.of(context).canPop()) Navigator.of(context).pop();
             _restartScan();
           });
-        } else {
+        });
+      } else {
+        setState(() {
           _remainingAttempts--;
           _pinValidationMessage =
           '❌ PIN $value is Incorrect. $_remainingAttempts attempts left.';
-          _addAttemptedToken(value, false);
+          _addAttemptedToken(value, false, {});
           if (_remainingAttempts <= 0) {
             _isTokenValid = false;
             _showMaxAttemptsError = true;
@@ -131,14 +114,14 @@ class _TokenScanPageState extends State<TokenScanPage> {
               _showMaxRetryDialog();
             });
           }
-        }
-      });
+        });
+      }
     } catch (e) {
       setState(() {
         _remainingAttempts--;
         _pinValidationMessage =
         '❌ Error. $_remainingAttempts attempts left.';
-        _addAttemptedToken(value, false);
+        _addAttemptedToken(value, false, {});
         if (_remainingAttempts <= 0) {
           _isTokenValid = false;
           _showMaxAttemptsError = true;
@@ -151,16 +134,16 @@ class _TokenScanPageState extends State<TokenScanPage> {
     }
   }
 
-  void _addAttemptedToken(String enteredPin, bool isValid) {
+  void _addAttemptedToken(String enteredPin, bool isValid, Map<String, dynamic> detail) {
     setState(() {
       _attemptedCards.insert(
         0,
         TokenCard(
           token: _scannedValue ?? '',
-          id: isValid ? '112473052' : '',
-          date: isValid ? '12 Jan 2026' : '',
-          value: isValid ? '35' : '',
-          handling: isValid ? '3.50' : '',
+          id: isValid ? (detail['id']?.toString() ?? '') : '',
+          date: isValid ? (detail['date']?.toString() ?? '') : '',
+          value: isValid ? (detail['value']?.toString() ?? '') : '',
+          handling: isValid ? (detail['handling']?.toString() ?? '') : '',
           isValid: isValid,
           pin: enteredPin,
         ),
@@ -171,8 +154,8 @@ class _TokenScanPageState extends State<TokenScanPage> {
     final summary = TokenSummaryModel();
     summary.addScan(
       isValid: isValid,
-      value: isValid ? 35 : 0, tokenDetail: {},
-      // Optionally, you can add logic for isExpired/isAlreadyScanned if you have that info
+      value: isValid ? int.tryParse(detail['value']?.toString() ?? '0') ?? 0 : 0,
+      tokenDetail: detail,
     );
   }
 
@@ -282,27 +265,6 @@ class _TokenScanPageState extends State<TokenScanPage> {
                           width: 40,
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           child: Focus(
-                            onKeyEvent: (node, event) {
-                              if (event.logicalKey ==
-                                  LogicalKeyboardKey.backspace &&
-                                  event is KeyDownEvent &&
-                                  pinControllers[index].text.isEmpty &&
-                                  index > 0) {
-                                pinControllers[index - 1].clear();
-                                FocusScope.of(context)
-                                    .requestFocus(pinFocusNodes[index - 1]);
-                              }
-                              if (event is KeyDownEvent &&
-                                  event.character != null &&
-                                  RegExp(r'\d').hasMatch(event.character!)) {
-                                if (pinControllers[index].text.isNotEmpty &&
-                                    index < pinControllers.length - 1) {
-                                  FocusScope.of(context)
-                                      .requestFocus(pinFocusNodes[index + 1]);
-                                }
-                              }
-                              return KeyEventResult.ignored;
-                            },
                             child: TextField(
                               controller: pinControllers[index],
                               focusNode: pinFocusNodes[index],
@@ -373,15 +335,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
         leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              dispose();
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              }
+              Navigator.pop(context);
             }),
       ),
       body: Padding(
@@ -446,16 +400,6 @@ class _TokenScanPageState extends State<TokenScanPage> {
                               setState(() {
                                 _isTorchOn = !_isTorchOn;
                               });
-                            }).catchError((error) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Error toggling torch: $error'),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              }
                             });
                           },
                         ),
@@ -493,7 +437,6 @@ class _TokenScanPageState extends State<TokenScanPage> {
                       ),
                     ),
                   ..._attemptedCards,
-
                 ],
               ),
             ),
@@ -629,10 +572,13 @@ class _TokenCardState extends State<TokenCard> {
                   ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ID: ${widget.id}'),
-                  Text('Valid Upto: ${widget.date}'),
-                  Text('Value To Pay: ₹${widget.value}'),
-                  Text('Handling: ₹${widget.handling}'),
+                  if (widget.id.isNotEmpty) Text('ID: ${widget.id}'),
+                  if (widget.date.isNotEmpty)
+                    Text('Valid Upto: ${widget.date}'),
+                  if (widget.value.isNotEmpty)
+                    Text('Value To Pay: ₹${widget.value}'),
+                  if (widget.handling.isNotEmpty)
+                    Text('Handling: ₹${widget.handling}'),
                   Row(
                     children: [
                       const Text('PIN: '),

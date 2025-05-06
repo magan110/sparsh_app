@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:learning2/screens/token_details.dart';
-import 'package:learning2/screens/token_summary_model.dart';
+import 'token_details.dart';
+import 'token_summary_model.dart';
 
 class TokenSummaryScreen extends StatefulWidget {
   final String activeTab;
-  const TokenSummaryScreen({super.key, this.activeTab = 'Summary'});
+  final List<String>? tokens;
+
+  const TokenSummaryScreen({
+    super.key,
+    this.activeTab = 'Summary',
+    this.tokens,
+  });
 
   @override
   State<TokenSummaryScreen> createState() => _TokenSummaryScreenState();
@@ -21,7 +27,6 @@ class _TokenSummaryScreenState extends State<TokenSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Re-fetch the summary so it reflects changes
     summary = TokenSummaryModel();
 
     return Scaffold(
@@ -58,10 +63,27 @@ class _TokenSummaryScreenState extends State<TokenSummaryScreen> {
                       const SizedBox(width: 10),
                       _buildButton("Close", Colors.grey, Colors.black,
                               () => Navigator.pop(context)),
-                      _buildButton("Save", Colors.blue, Colors.white, () {}),
-                      const SizedBox(width: 10),
+                      _buildButton("Save", Colors.blue, Colors.white, () {
+                        // For demo: Add a known valid token; replace with user-input or API logic as needed
+                        String newToken = '08WX1NDVTPKB'; // Known valid token
+
+                        List<String> updatedTokens = (widget.tokens ??
+                            ['08WX1NDVTPKB', '15TY8BGFWCNH', 'XTR9PU5RXT00'])
+                          ..add(newToken);
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TokenDetailsPage(
+                              activeTab: 'Details',
+                              tokens: updatedTokens,
+                            ),
+                          ),
+                        );
+                      }),
                     ],
                   ),
+                  const SizedBox(width: 10),
                 ],
               ),
             ),
@@ -77,7 +99,8 @@ class _TokenSummaryScreenState extends State<TokenSummaryScreen> {
         Padding(
           padding: const EdgeInsets.all(12.0),
           child: Text(label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         ),
         Padding(
           padding: const EdgeInsets.all(12.0),
@@ -98,11 +121,16 @@ class _TokenSummaryScreenState extends State<TokenSummaryScreen> {
       border: TableBorder.all(color: Colors.grey.shade400),
       children: [
         _buildTableRow('Total Scan', summary.totalScan.toString(), Colors.blue),
-        _buildTableRow('Valid Scan', summary.validScan.toString(), Colors.green),
-        _buildTableRow('Expired Scan', summary.expiredScan.toString(), Colors.orange),
-        _buildTableRow('Already Scanned', summary.alreadyScanned.toString(), Colors.deepPurple),
-        _buildTableRow('Invalid Scan', summary.invalidScan.toString(), Colors.red),
-        _buildTableRow('Total Amount', summary.totalAmount.toString(), Colors.black),
+        _buildTableRow(
+            'Valid Scan', summary.validScan.toString(), Colors.green),
+        _buildTableRow(
+            'Expired Scan', summary.expiredScan.toString(), Colors.orange),
+        _buildTableRow('Already Scanned', summary.alreadyScanned.toString(),
+            Colors.deepPurple),
+        _buildTableRow(
+            'Invalid Scan', summary.invalidScan.toString(), Colors.red),
+        _buildTableRow(
+            'Total Amount', summary.totalAmount.toString(), Colors.black),
       ],
     );
   }
@@ -139,10 +167,32 @@ class _TokenSummaryScreenState extends State<TokenSummaryScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _navItem(context, 'Details', activeTab == 'Details',
-                const TokenDetailsPage(activeTab: 'Details')),
-            _navItem(context, 'Summary', activeTab == 'Summary',
-                const TokenSummaryScreen(activeTab: 'Summary')),
+            _navItem(
+                context,
+                'Details',
+                activeTab == 'Details',
+                    () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TokenDetailsPage(
+                      activeTab: 'Details',
+                      tokens: widget.tokens,
+                    ),
+                  ),
+                )),
+            _navItem(
+                context,
+                'Summary',
+                activeTab == 'Summary',
+                    () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TokenSummaryScreen(
+                      activeTab: 'Summary',
+                      tokens: widget.tokens,
+                    ),
+                  ),
+                )),
           ],
         ),
       ),
@@ -150,12 +200,11 @@ class _TokenSummaryScreenState extends State<TokenSummaryScreen> {
   }
 
   Widget _navItem(
-      BuildContext context, String label, bool isActive, Widget targetPage) {
+      BuildContext context, String label, bool isActive, VoidCallback onTap) {
     return GestureDetector(
       onTap: () {
         if (!isActive) {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_) => targetPage));
+          onTap();
         }
       },
       child: Container(
