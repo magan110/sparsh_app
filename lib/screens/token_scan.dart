@@ -1,4 +1,3 @@
-// Main token scan and validation page, with live API detail fetch for cards!
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -23,6 +22,8 @@ class _TokenScanPageState extends State<TokenScanPage> {
   List.generate(3, (_) => TextEditingController());
   List<FocusNode> pinFocusNodes = List.generate(3, (_) => FocusNode());
   bool _isTorchOn = false;
+  bool _isProcessingScan = false;
+  DateTime? _lastScanTime;
 
   List<TokenCard> _attemptedCards = [];
   String? _apiAutoPin;
@@ -31,12 +32,33 @@ class _TokenScanPageState extends State<TokenScanPage> {
   @override
   void initState() {
     super.initState();
-    _cameraController = MobileScannerController();
-    _cameraController?.start();
+    _initializeCamera();
   }
 
-  void _validateToken(String value) async {
+  Future<void> _initializeCamera() async {
+    _cameraController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.unrestricted,
+      detectionTimeoutMs: 500,
+      formats: [BarcodeFormat.qrCode],
+      torchEnabled: false,
+    );
+
+    await _cameraController?.start();
+  }
+
+
+  void _validateToken(String value) {
+    final now = DateTime.now();
+    if (_lastScanTime != null &&
+        now.difference(_lastScanTime!) < Duration(milliseconds: 500)) {
+      return;
+    }
+    _lastScanTime = now;
+
+    if (_scannedValue == value || _isProcessingScan) return;
+
     setState(() {
+      _isProcessingScan = true;
       _scannedValue = value;
       _isTokenValid = false;
       _pinValidationMessage = null;
@@ -45,6 +67,10 @@ class _TokenScanPageState extends State<TokenScanPage> {
       _showMaxAttemptsError = false;
     });
 
+    _fetchTokenDetails(value);
+  }
+
+  Future<void> _fetchTokenDetails(String value) async {
     try {
       final response = await http.post(
         Uri.parse('https://qa.birlawhite.com:55232/api/TokenValidate/validate'),
@@ -53,7 +79,8 @@ class _TokenScanPageState extends State<TokenScanPage> {
           'tokenNum': value,
           'tokenCvv': '',
         }),
-      );
+      ).timeout(Duration(seconds: 5));
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data is Map<String, dynamic> && data.containsKey('tokenCvv')) {
@@ -62,8 +89,14 @@ class _TokenScanPageState extends State<TokenScanPage> {
           });
         }
       }
-    } catch (_) {}
-    _showPinDialog();
+    } catch (_) {
+      // Handle error silently
+    } finally {
+      setState(() {
+        _isProcessingScan = false;
+      });
+      _showPinDialog();
+    }
   }
 
   Future<void> _validatePin(String value) async {
@@ -73,39 +106,43 @@ class _TokenScanPageState extends State<TokenScanPage> {
       });
       return;
     }
+
     final tokenNum = _scannedValue;
     try {
       final response = await http.post(
         Uri.parse('https://qa.birlawhite.com:55232/api/TokenValidate/validate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'tokenNum': tokenNum, 'tokenCvv': value}),
-      );
+      ).timeout(Duration(seconds: 5));
+
       if (response.statusCode == 200 &&
           response.body.contains('Validate Successfully')) {
-        // Fetch actual token details from scan API
         final scanResponse = await http.post(
             Uri.parse('https://qa.birlawhite.com:55232/api/TokenScan/scan'),
             body: {'token': tokenNum}
-        );
+        ).timeout(Duration(seconds: 5));
+
         Map<String, dynamic> detail = {};
         if (scanResponse.statusCode == 200) {
           detail = jsonDecode(scanResponse.body);
         }
+
         setState(() {
           _pinValidationMessage = '✅ PIN $value is Correct!';
           _isTokenValid = true;
           _addAttemptedToken(value, true, detail);
-          Future.delayed(const Duration(milliseconds: 800), () {
-            if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-            _restartScan();
-          });
         });
+
+        await Future.delayed(const Duration(milliseconds: 800));
+        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        _restartScan();
       } else {
         setState(() {
           _remainingAttempts--;
           _pinValidationMessage =
           '❌ PIN $value is Incorrect. $_remainingAttempts attempts left.';
           _addAttemptedToken(value, false, {});
+
           if (_remainingAttempts <= 0) {
             _isTokenValid = false;
             _showMaxAttemptsError = true;
@@ -122,6 +159,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
         _pinValidationMessage =
         '❌ Error. $_remainingAttempts attempts left.';
         _addAttemptedToken(value, false, {});
+
         if (_remainingAttempts <= 0) {
           _isTokenValid = false;
           _showMaxAttemptsError = true;
@@ -150,7 +188,6 @@ class _TokenScanPageState extends State<TokenScanPage> {
       );
     });
 
-    // Update summary model
     final summary = TokenSummaryModel();
     summary.addScan(
       isValid: isValid,
@@ -166,6 +203,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
       _pinValidationMessage = null;
       _remainingAttempts = 3;
       _showMaxAttemptsError = false;
+      _isProcessingScan = false;
       for (var controller in pinControllers) {
         controller.clear();
       }
@@ -175,6 +213,7 @@ class _TokenScanPageState extends State<TokenScanPage> {
 
   @override
   void dispose() {
+    _cameraController?.stop();
     _cameraController?.dispose();
     for (var node in pinFocusNodes) {
       node.dispose();
@@ -358,15 +397,19 @@ class _TokenScanPageState extends State<TokenScanPage> {
                         controller: _cameraController,
                         onDetect: (capture) {
                           final barcode = capture.barcodes.first;
-                          final value = barcode.rawValue;
-                          if (value != null && _scannedValue != value) {
-                            _validateToken(value);
+                          if (barcode.rawValue != null &&
+                              barcode.format == BarcodeFormat.qrCode) {
+                            _validateToken(barcode.rawValue!);
                           }
                         },
-                        onScannerStarted: (controller) {},
+                        scanWindow: Rect.largest,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, child) {
+                          return Center(child: Text('Camera error: $error'));
+                        },
                       )
                           : const Center(
-                        child: Text("Camera not initialized"),
+                        child: CircularProgressIndicator(),
                       ),
                     ),
                   ),
@@ -406,6 +449,15 @@ class _TokenScanPageState extends State<TokenScanPage> {
                       ),
                     ),
                   ),
+                  if (_isProcessingScan)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black54,
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

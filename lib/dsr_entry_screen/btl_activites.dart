@@ -547,7 +547,7 @@ class _BtlActivitesState extends State<BtlActivites> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20), // Spacing at the bottom
+              const SizedBox(height: 20), // Spacing at the
             ],
           ),
         ),

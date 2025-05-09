@@ -498,7 +498,7 @@ class _DsrEntryState extends State<DsrEntry> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20), // Spacing at the bottom
+                const SizedBox(height: 20), // Spacing at the
               ],
             ),
           ),

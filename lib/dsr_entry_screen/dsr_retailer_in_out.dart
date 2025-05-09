@@ -497,7 +497,7 @@ class _DsrRetailerInOutState extends State<DsrRetailerInOut> {
                     // Add your exception logic here
                   }
                 }),
-                const SizedBox(height: 20), // Spacing at the bottom
+                const SizedBox(height: 20), // Spacing at the
               ],
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learning2/reports/SAP%20Reports/day_wise_summary.dart';
+import 'package:learning2/screens/schema.dart';
 
 import '../reports/Gerneral Reports/account_statement.dart';
 import '../reports/SAP Reports/day_summary.dart';
@@ -74,22 +75,26 @@ class _AppDrawerState extends State<AppDrawer> {
               ],
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Error handling for image loading is good
-                Image.asset(
-                  'assets/image27.png', // Ensure this asset exists in pubspec.yaml
-                  height: 60, // Slightly smaller image
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Error loading drawer header image: $error');
-                    return const Icon(Icons.business,
-                        size: 60, color: Colors.white); // Placeholder icon
-                  },
+                Container(
+                  width : 700,
+                  child: Image.asset(
+                    'assets/image27.png', // Ensure this asset exists in pubspec.yaml
+                    height: 97,
+                    fit: BoxFit.fill,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading drawer header image: $error');
+                      return const Icon(Icons.business,
+                          size: 60, color: Colors.white); // Placeholder icon
+                    },
+                  ),
                 ),
                 const SizedBox(height: 12), // Increased spacing
                 const Text(
-                  'Birla White Ltd.',
+                  'Birla White',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18, // Slightly larger font size
@@ -1674,7 +1679,7 @@ class _AppDrawerState extends State<AppDrawer> {
           if (item['route'] == 'day_summary') {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const DaySummary()), // Assuming DaySummary is the name of your widget/screen
+              MaterialPageRoute(builder: (context) =>  DaySummary()), // Assuming Schema is the name of your widget/screen
             );
           }
           if(item['route'] == 'Day Wise Details'){

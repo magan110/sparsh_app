@@ -1,19 +1,32 @@
-import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:learning2/reports/Gerneral%20Reports/account_statement.dart';
+import 'package:learning2/reports/SAP%20Reports/day_summary.dart';
+import 'package:learning2/screens/notification_screen.dart';
 import 'package:learning2/screens/profile_screen.dart';
-
-import 'package:learning2/screens/splash_screen.dart';
-import 'package:learning2/screens/tasks_screen.dart';
+import 'package:learning2/screens/dashboard_screen.dart';
+import 'package:learning2/screens/schema.dart';
 import 'package:learning2/screens/token_scan.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 import '../dsr_entry_screen/dsr_entry.dart';
 import '../reports/scheme_discount/rpl_outlet_tracker.dart';
-import 'dsr_screen.dart';
+import 'dsr_screen.dart'; // Import not used, so I'll comment it out.  If you use it, uncomment.
 import 'mail_screen.dart';
-import 'app_drawer.dart'; // <<< ADD THIS IMPORT
+import 'app_drawer.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'SPARSH App',
+      home: HomeScreen(),
+    );
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,27 +37,42 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-
+  bool _isSearchVisible = false;
+  final TextEditingController _searchController = TextEditingController();
   final List<Widget> _screens = [
     const HomeContent(),
-    const TasksScreen(),
-    const MailScreen(),
-    const ProfileScreen(),
+    const DashboardScreen(),
+    const Schema(),
+    const ProfilePage(),
   ];
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: _buildAppBar(),
-        drawer: const AppDrawer(),
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _screens,
-        ),
-        bottomNavigationBar: _buildBottomBar(),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar(),
+      drawer: const AppDrawer(),
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _selectedIndex,
+            children: _screens,
+          ),
+          _buildSearchInput(context),
+        ],
       ),
+      bottomNavigationBar: _buildPremiumBottomBar() ,
     );
   }
 
@@ -56,10 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[
-              Color(0xFF42a5f5),
-              Color(0xFFb3e5fc),
-            ],
+            colors: [Colors.blue, Colors.blue],
           ),
         ),
       ),
@@ -76,114 +101,232 @@ class _HomeScreenState extends State<HomeScreen> {
         IconButton(
           icon: const Icon(Icons.notifications_none, size: 30, color: Colors.white),
           onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationScreen()));
             print('Notifications tapped');
           },
         ),
-        IconButton(
-          icon: const Icon(Icons.search, size: 30, color: Colors.white),
-          onPressed: () {
-            print('Search tapped');
-          },
-        ),
-        // --- START: Logout Button Logic ---
-        IconButton(
-          icon: const Icon(Icons.logout, size: 30, color: Colors.white),
-          onPressed: () async {
-            // Show a confirmation dialog
-            final bool? confirmLogout = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Logout'),
-                content: const Text('Are you sure you want to logout?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false), // Return false when Cancel is pressed
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true), // Return true when Logout is pressed
-                    child: const Text('Logout'),
-                  ),
-                ],
-              ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, -1.0),
+                end: Offset.zero, // Corrected: Use Offset.zero
+              ).animate(animation),
+              child: child,
             );
-
-            // If the user confirmed the logout, proceed with clearing shared preferences and navigating
-            if (confirmLogout == true) {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.clear();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => SplashScreen()),
-              );
-            }
-            // If the user cancelled, do nothing.  The dialog already closed.
           },
+          child: _isSearchVisible
+              ? const SizedBox(width: 48, height: 48)
+              : IconButton(
+            key: const ValueKey('search_icon'),
+            icon: const Icon(Icons.search, size: 30, color: Colors.white),
+            onPressed: () {
+              setState(() {
+                _isSearchVisible = true;
+              });
+            },
+          ),
         ),
-        // --- END: Logout Button Logic ---
       ],
     );
   }
 
-  Widget _buildBottomBar() {
-    final List<Map<String, dynamic>> bottomNavItems = [
-      {'icon': Icons.home, 'label': 'Home'},
-      {'icon': Icons.task, 'label': 'Tasks'},
-      {'icon': Icons.mail, 'label': 'Mail'},
-      {'icon': Icons.person, 'label': 'Profile'},
+  Widget _buildSearchInput(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: _isSearchVisible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 300),
+      child: Visibility(
+        visible: _isSearchVisible,
+        child: Container(
+          color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search for reports, orders, etc...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      setState(() {
+                        _isSearchVisible = false;
+                        _searchController.clear();
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                onSubmitted: (value) {
+                  print('Searching for: $value');
+                  setState(() {
+                    _isSearchVisible = false;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumBottomBar() {
+    final List<Map<String, dynamic>> navItems = [
+      {
+        'icon': Icons.home_outlined,
+        'activeIcon': Icons.home_rounded,
+        'label': 'Home',
+        'color': Colors.blueAccent
+      },
+      {
+        'icon': Icons.dashboard,
+        'activeIcon': Icons.dashboard,
+        'label': 'DashBoard',
+        'color': Colors.purpleAccent
+      },
+      {
+        'icon': Icons.schema,
+        'activeIcon': Icons.schema,
+        'label': 'Scheme',
+        'color': Colors.orangeAccent
+      },
+      {
+        'icon': Icons.person_outline,
+        'activeIcon': Icons.person_rounded,
+        'label': 'Profile',
+        'color': Colors.lightGreen
+      },
     ];
 
     return Container(
+      height: 80,
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, -1),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            spreadRadius: 2,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(bottomNavItems.length, (index) {
-          final item = bottomNavItems[index];
-          final isSelected = _selectedIndex == index;
+        children: List.generate(navItems.length, (index) {
+          final item = navItems[index];
+          final isActive = _selectedIndex == index;
+          final color = item['color'] as Color;
+
           return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedIndex = index;
-              });
-              print("Tapped: ${item['label']}");
-            },
+            onTap: () => setState(() => _selectedIndex = index),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              duration: 500.ms,
+              curve: Curves.fastOutSlowIn,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: isSelected ? Colors.blue.withOpacity(0.15) : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+                gradient: isActive
+                    ? LinearGradient(
+                  colors: [
+                    color.withOpacity(0.15),
+                    color.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
+                    : null,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    item['icon'],
-                    size: isSelected ? 30 : 28,
-                    color: isSelected ? Colors.blue : Colors.grey[600],
+                  // Icon with floating effect
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Background glow
+                      if (isActive)
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: color.withOpacity(0.2),
+                          ),
+                        ).animate(
+                          onComplete: (controller) => controller.reverse(),
+                        ).scale(
+                          duration: 600.ms,
+                          begin: const Offset(0.8, 0.8),
+                          curve: Curves.elasticOut,
+                        ).fadeIn(duration: 300.ms),
+
+                      // Icon with smooth transition
+                      AnimatedSwitcher(
+                        duration: 300.ms,
+                        transitionBuilder: (child, anim) => ScaleTransition(
+                          scale: anim,
+                          child: FadeTransition(
+                            opacity: anim,
+                            child: child,
+                          ),
+                        ),
+                        child: IconTheme(
+                          data: IconThemeData(
+                            size: isActive ? 28 : 24,
+                            color: isActive ? color : Colors.grey.shade500,
+                          ),
+                          child: isActive
+                              ? Icon(item['activeIcon'], key: ValueKey('active-$index'))
+                              : Icon(item['icon'], key: ValueKey('inactive-$index')),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item['label'],
+
+                  const SizedBox(height: 6),
+
+                  // Label with simple fade animation
+                  AnimatedDefaultTextStyle(
+                    duration: 300.ms,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isSelected ? Colors.blue : Colors.grey[600],
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                      color: isActive ? color : Colors.grey.shade600,
+                      height: 1.2,
                     ),
-                  )
+                    child: Text(item['label']),
+                  ),
+
+                  // Animated underline
+                  if (isActive)
+                    Container(
+                      width: 24,
+                      height: 3,
+                      margin: const EdgeInsets.only(top: 4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        gradient: LinearGradient(
+                          colors: [color, color.withOpacity(0.7)],
+                        ),
+                      ),
+                    ).animate().scaleX(
+                      duration: 600.ms,
+                      begin: 0.5,
+                      curve: Curves.elasticOut,
+                    ).fadeIn(duration: 300.ms),
                 ],
               ),
+            ).animate().shakeX(
+              duration: 300.ms,
+              hz: 4,
+              amount: 0.5,
             ),
           );
         }),
@@ -353,16 +496,16 @@ class _HomeContentState extends State<HomeContent> {
               if (item['label']!.contains('RPL Outlet')) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const RplOutletTracker()),
+                  MaterialPageRoute(
+                      builder: (context) => const RplOutletTracker()),
                 );
-              }
-              else if (item['label']!.contains('Account')) {
+              } else if (item['label']!.contains('Account')) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AccountStatement()),
+                  MaterialPageRoute(
+                      builder: (context) => const AccountStatement()),
                 );
               }
-              // TODO: Add other navigations for different labels if needed
             },
             child: _buildQuickMenuItem(item['image']!, item['label']!, itemWidth),
           );
@@ -415,9 +558,15 @@ class _HomeContentState extends State<HomeContent> {
             onTap: () {
               print('${item['label']} tapped');
               if (item['route'] == 'dsr') {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const DsrEntry()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const DsrEntry()));
               } else if (item['route'] == 'scanner') {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TokenScanPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => TokenScanPage()));
               }
             },
             child: _buildMostlyUsedAppItem(item['image']!, item['label']!),
@@ -469,14 +618,16 @@ class _HomeContentState extends State<HomeContent> {
             padding: EdgeInsets.only(
               right: index < _bannerImagePaths.length - 1 ? 10.0 : 0.0,
             ),
-            child: _buildBannerItem(screenWidth, screenHeight, _bannerImagePaths[index]),
+            child: _buildBannerItem(
+                screenWidth, screenHeight, _bannerImagePaths[index]),
           );
         },
       ),
     );
   }
 
-  Widget _buildBannerItem(double screenWidth, double screenHeight, String imagePath) {
+  Widget _buildBannerItem(
+      double screenWidth, double screenHeight, String imagePath) {
     return Container(
       width: screenWidth,
       decoration: BoxDecoration(
@@ -506,7 +657,6 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
 
   final List<String> menuItems = [
     "Quick Menu",
-    "Dashboard",
     "Document",
     "Registration",
     "Entertainment",
@@ -531,8 +681,10 @@ class _HorizontalMenuState extends State<HorizontalMenu> {
               style: OutlinedButton.styleFrom(
                 backgroundColor: isSelected ? Colors.blue : Colors.white,
                 foregroundColor: isSelected ? Colors.white : Colors.blue,
-                side: BorderSide(color: isSelected ? Colors.blue : Colors.grey.shade400),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                side: BorderSide(
+                    color: isSelected ? Colors.blue : Colors.grey.shade400),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               onPressed: () {

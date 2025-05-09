@@ -481,7 +481,7 @@ class _MeetingWithNewPurchaserState extends State<MeetingWithNewPurchaser> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20), // Spacing at the bottom
+                const SizedBox(height: 20), // Spacing at the
               ],
             ),
           ),

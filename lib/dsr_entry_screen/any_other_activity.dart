@@ -470,7 +470,7 @@ class _AnyOtherActivityState extends State<AnyOtherActivity> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20), // Spacing at the bottom
+              const SizedBox(height: 20), // Spacing at the
             ],
           ),
         ),

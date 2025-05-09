@@ -751,7 +751,7 @@ class _MeetingsWithContractorState extends State<MeetingsWithContractor> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20), // Spacing at the bottom
+                const SizedBox(height: 20), // Spacing at the
               ],
             ),
           ),
